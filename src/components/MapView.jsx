@@ -56,9 +56,11 @@ export default function MapView({ tiffUrl, onCogMeta, onViewportRange, onTapValu
       style: OPENFREEMAP_STYLE,
       center: [initialView.lng, initialView.lat],
       zoom: initialView.zoom,
+      maxZoom: 14,
       attributionControl: { compact: true },
     });
     mapRef.current = map;
+    if (import.meta.env.DEV) window.__debugMap = map;
     // Gate layer setup on this instead of a bare `map.once('load', ...)`
     // registered later: if 'load' already fired by the time the COG
     // metadata fetch resolves (a real race, worse under React StrictMode's
