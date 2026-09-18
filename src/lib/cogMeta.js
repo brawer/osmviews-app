@@ -39,7 +39,15 @@ export async function readCogMeta(url) {
 // a bin shouldn't render as a negative bar if some future build ever wrote
 // one.
 function parseRatHistogram(gdalMetadataXml) {
-  const doc = new DOMParser().parseFromString(gdalMetadataXml, 'application/xml');
+  // TIFF ASCII-type tag values are conventionally NUL-terminated, and this
+  // one is no exception -- the string geotiff.js hands back carries a
+  // trailing "\0" after </GDALMetadata>. Chromium's DOMParser silently
+  // tolerates that trailing byte; Firefox's correctly rejects it as
+  // non-whitespace content after the root element ("XML Parsing Error: not
+  // well-formed"), which made the histogram (and everything gated on this
+  // parse succeeding) never load in Firefox at all.
+  const xml = gdalMetadataXml.replace(/\0+$/, '');
+  const doc = new DOMParser().parseFromString(xml, 'application/xml');
   const rat = doc.querySelector('GDALRasterAttributeTable');
   if (!rat) return null;
 
