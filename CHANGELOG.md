@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.2](https://github.com/brawer/osmviews-app/compare/v0.1.1...v0.1.2) (2026-09-18)
+
+
+### 🐞 Fixes
+
+* the map never rendered the OSMViews layer on the live site ([#9](https://github.com/brawer/osmviews-app/issues/9)) ([91f9b50](https://github.com/brawer/osmviews-app/commit/91f9b503d5e67d7f0e52dbb4d38c8bc98b3f2fb2))
+
+
+### 🏎️ Performance
+
+* don't render basemap layers the opaque raster always hides ([#11](https://github.com/brawer/osmviews-app/issues/11)) ([537897c](https://github.com/brawer/osmviews-app/commit/537897c0dd221b60d1e4119e8f449d7c037ce0e5))
+
 ## [0.1.1](https://github.com/brawer/osmviews-app/compare/v0.1.0...v0.1.1) (2026-09-18)
 
 
