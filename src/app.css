@@ -12,16 +12,24 @@
   justify-content: space-between;
   height: 52px;
   padding: 0 8px 0 16px;
-  background: var(--paper-raised);
+  /* Same background as brawer.ch's <header> (assets/css/main.css). */
+  background: var(--paper-dim);
   border-bottom: 1px solid var(--border);
   box-shadow: 0 1px 6px var(--shadow);
 }
 
 .app-bar__title {
-  font-weight: 600;
   font-size: 1.05rem;
   letter-spacing: 0.01em;
   color: var(--ink);
+}
+
+.app-bar__title-osm {
+  font-weight: 800;
+}
+
+.app-bar__title-views {
+  font-weight: 300;
 }
 
 .app-bar__menu-button {
