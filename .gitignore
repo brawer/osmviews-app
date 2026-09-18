@@ -1,0 +1,10 @@
+# SPDX-FileCopyrightText: 2026 Sascha Brawer <sascha@brawer.ch>
+# SPDX-License-Identifier: MIT
+
+node_modules/
+dist/
+
+# Local copy of the pipeline's published files, used for development
+# against the real client-side COG codepath. Fetched manually; never
+# committed (the GeoTIFF alone is ~580 MB).
+data/

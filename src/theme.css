@@ -1,0 +1,78 @@
+/* SPDX-FileCopyrightText: 2026 Sascha Brawer <sascha@brawer.ch> */
+/* SPDX-License-Identifier: MIT */
+
+/* Structured the same way as brawer.ch's "Paper & Plum" tokens
+   (brawer/homepage's assets/css/main.css): light values on :root, redefined
+   under prefers-color-scheme for dark. No manual light/dark toggle -- this
+   app follows the OS/browser setting only. */
+
+:root {
+  color-scheme: light dark;
+
+  --paper: #fafaf7;
+  --paper-raised: #ffffff;
+  --ink: #242019;
+  --ink-soft: #5c5648;
+  --ink-faint: #6a6454;
+  --accent: #8c3f5c;
+  --border: rgba(36, 32, 25, 0.12);
+  --shadow: rgba(36, 32, 25, 0.18);
+
+  /* The value-density color ramp (step 5 of the plan): dark, muted blue at
+     0 -- oceans and deserts share that near-zero value, and blue reads as
+     "background" for both, unlike a warm/yellow low end that's confusable
+     with sand -- warming up through ambers/oranges to a saturated red, and
+     landing on this theme's own --accent plum at the high end. Six stops,
+     evenly spaced across [0, SMax]; contrast-checked against
+     --paper-raised with the dataviz skill's validator. */
+  --ramp-0: #1a3a5c;
+  --ramp-1: #3d6f96;
+  --ramp-2: #e3b56a;
+  --ramp-3: #e2823f;
+  --ramp-4: #c1523a;
+  --ramp-5: #8c3f5c;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #1a1613;
+    --paper-raised: #362d23;
+    --ink: #f2e9d8;
+    --ink-soft: #c9bca5;
+    --ink-faint: #a0947d;
+    --accent: #e2a0bc;
+    --border: rgba(242, 233, 216, 0.12);
+    --shadow: rgba(0, 0, 0, 0.4);
+
+    /* Same six-stop shape, restepped for legibility on the dark surface
+       (the light-mode navy #1a3a5c all but disappears against
+       --paper-raised here) and anchored on the dark --accent. */
+    --ramp-0: #4488b8;
+    --ramp-1: #6aa0c9;
+    --ramp-2: #e3b56a;
+    --ramp-3: #e2823f;
+    --ramp-4: #d5636b;
+    --ramp-5: #e2a0bc;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+}

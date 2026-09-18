@@ -1,0 +1,35 @@
+{
+  "name": "osmviews-app",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Map-centric web app for OSMViews, a world-wide ranking of geographic locations by OpenStreetMap view density.",
+  "license": "MIT",
+  "engines": {
+    "node": "22.x",
+    "npm": ">=10"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@geomatico/maplibre-cog-protocol": "0.9.3",
+    "geotiff": "3.0.5",
+    "maplibre-gl": "6.10.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@vitejs/plugin-react": "6.1.1",
+    "eslint": "10.10.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "eslint-plugin-react-refresh": "0.5.7",
+    "globals": "17.12.0",
+    "sirv": "3.0.2",
+    "vite": "8.3.0"
+  }
+}

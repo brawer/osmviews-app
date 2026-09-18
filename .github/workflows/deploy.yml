@@ -1,0 +1,33 @@
+# SPDX-FileCopyrightText: 2026 Sascha Brawer <sascha@brawer.ch>
+# SPDX-License-Identifier: MIT
+#
+# Builds the app and uploads dist/ to the osmviews-app Bunny storage zone.
+# Fires on the GitHub release release-please.yml creates -- not on every
+# push to main -- so every deploy has a version tag to roll back to.
+
+name: deploy
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      - run: node scripts/deploy.mjs
+        env:
+          BUNNY_OSMVIEWS_APP_ACCESS_KEY: ${{ secrets.BUNNY_OSMVIEWS_APP_ACCESS_KEY }}

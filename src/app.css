@@ -1,0 +1,222 @@
+/* SPDX-FileCopyrightText: 2026 Sascha Brawer <sascha@brawer.ch> */
+/* SPDX-License-Identifier: MIT */
+
+/* ---- App bar ---- */
+
+.app-bar {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  padding: 0 8px 0 16px;
+  background: var(--paper-raised);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 6px var(--shadow);
+}
+
+.app-bar__title {
+  font-weight: 600;
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+}
+
+.app-bar__menu-button {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font-size: 1.3rem;
+  line-height: 1;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.app-bar__menu-button:hover,
+.app-bar__menu-button:focus-visible {
+  background: color-mix(in srgb, var(--paper-raised) 88%, var(--accent) 12%);
+}
+
+/* ---- Drawer ---- */
+
+.drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.drawer-backdrop--open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.drawer {
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: 30;
+  width: min(85vw, 360px);
+  overflow-y: auto;
+  /* Tonal elevation, same idea as the homepage's drawer: a surface tinted
+     toward the theme's own accent, rather than just lightened. */
+  background: color-mix(in srgb, var(--paper-raised) 88%, var(--accent) 12%);
+  box-shadow: 2px 0 16px var(--shadow);
+  padding: 20px;
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+}
+
+.drawer--open {
+  transform: translateX(0);
+}
+
+.drawer__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font-size: 1.4rem;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.drawer__section {
+  margin: 0 0 24px 0;
+}
+
+.drawer__section h3 {
+  margin: 0 0 8px 0;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+}
+
+.drawer__section p {
+  margin: 0 0 8px 0;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.drawer__section a {
+  display: block;
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.92rem;
+  margin-bottom: 4px;
+}
+
+.drawer__section a:hover {
+  text-decoration: underline;
+}
+
+.drawer__section--license a {
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+}
+
+/* ---- Update banner ---- */
+
+.update-banner {
+  position: absolute;
+  top: 62px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  background: var(--accent);
+  color: var(--paper-raised);
+  border: none;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  box-shadow: 0 2px 8px var(--shadow);
+  cursor: pointer;
+}
+
+/* ---- Histogram / value inspector card ---- */
+
+.histogram-card {
+  position: absolute;
+  inset: auto 0 0 0;
+  z-index: 10;
+  margin: 0 auto max(0px, env(safe-area-inset-bottom)) auto;
+  max-width: 480px;
+  background: var(--paper-raised);
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -2px 16px var(--shadow);
+  padding: 12px 16px 14px 16px;
+}
+
+@media (min-width: 540px) {
+  .histogram-card {
+    inset: auto 16px 16px auto;
+    left: auto;
+    border-radius: 16px;
+  }
+}
+
+.histogram-card--loading {
+  color: var(--ink-faint);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 16px;
+}
+
+.histogram-card__bars {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  height: 64px;
+  gap: 1px;
+}
+
+.histogram-card__bar {
+  flex: 1 1 0;
+  min-width: 1px;
+  border-radius: 1px 1px 0 0;
+  transition: opacity 0.2s ease;
+}
+
+.histogram-card__marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--ink);
+  box-shadow: 0 0 0 1px var(--paper-raised);
+}
+
+.histogram-card__ramp-strip {
+  height: 10px;
+  border-radius: 4px;
+  margin-top: 4px;
+}
+
+.histogram-card__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 8px;
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+}
+
+.histogram-card__tap-value {
+  color: var(--ink-soft);
+}
+
+.histogram-card__tap-value strong {
+  color: var(--accent);
+}
