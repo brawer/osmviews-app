@@ -94,6 +94,32 @@ export default function MapView({ tiffUrl, onCogMeta, onViewportRange, onTapValu
       });
       mapRef.current = map;
       if (import.meta.env.DEV) window.__debugMap = map;
+      // MapLibre's compact attribution starts expanded and only collapses
+      // once the user drags the map (AttributionControl._updateCompact
+      // opens it unconditionally on init; only its drag-triggered
+      // _updateCompactMinimize ever removes maplibregl-compact-show).
+      // Collapsed from the start reads better landing on the map fresh.
+      // A single removal right after construction isn't enough: the
+      // control starts "empty" (no source has reported its attribution
+      // string yet) and only gets classed maplibregl-compact-show a beat
+      // later, once that content loads in -- observed ~200ms later in
+      // testing, overwriting an immediate removal. A one-shot
+      // MutationObserver reacts whenever the class actually appears
+      // (matching the exact same moment MapLibre itself decides to open
+      // it) and disconnects right after, so it doesn't fight a later
+      // legitimate click to expand it.
+      const attrib = map.getContainer().querySelector('.maplibregl-ctrl-attrib');
+      if (attrib) {
+        const collapseOnce = () => {
+          if (attrib.classList.contains('maplibregl-compact-show')) {
+            attrib.classList.remove('maplibregl-compact-show');
+            observer.disconnect();
+          }
+        };
+        const observer = new MutationObserver(collapseOnce);
+        observer.observe(attrib, { attributes: true, attributeFilter: ['class'] });
+        collapseOnce();
+      }
       // Wait for the style's `'style.load'` event, not the Map-level
       // `'load'` event and not `isStyleLoaded()` -- both of those
       // additionally require every initial source's tiles to finish
