@@ -12,33 +12,92 @@
   justify-content: space-between;
   height: 52px;
   padding: 0 8px 0 16px;
-  background: var(--paper-raised);
+  /* Same background as brawer.ch's <header> (assets/css/main.css). */
+  background: var(--paper-dim);
   border-bottom: 1px solid var(--border);
   box-shadow: 0 1px 6px var(--shadow);
 }
 
+.app-bar__brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Same emoji/link-to-home idea as brawer.ch's .site-logo. */
+.app-bar__logo {
+  font-size: 1.5rem;
+  line-height: 1;
+  display: inline-flex;
+  transition: transform 0.15s ease;
+}
+
+.app-bar__logo:hover {
+  transform: scale(1.08);
+}
+
+.app-bar__logo:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-bar__logo {
+    transition: none;
+  }
+
+  .app-bar__logo:hover {
+    transform: none;
+  }
+}
+
 .app-bar__title {
-  font-weight: 600;
   font-size: 1.05rem;
   letter-spacing: 0.01em;
   color: var(--ink);
 }
 
-.app-bar__menu-button {
-  width: 40px;
-  height: 40px;
-  border: none;
-  background: transparent;
-  color: var(--ink);
-  font-size: 1.3rem;
-  line-height: 1;
-  border-radius: 8px;
-  cursor: pointer;
+.app-bar__title-osm {
+  font-weight: 800;
 }
 
-.app-bar__menu-button:hover,
+.app-bar__title-views {
+  font-weight: 300;
+}
+
+/* Same shape/colors as brawer.ch's .drawer-trigger. */
+.app-bar__menu-button {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  line-height: 1;
+  background: var(--paper-raised);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-bar__menu-button {
+    transition: none;
+  }
+}
+
+.app-bar__menu-button:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
 .app-bar__menu-button:focus-visible {
-  background: color-mix(in srgb, var(--paper-raised) 88%, var(--accent) 12%);
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 
 /* ---- Drawer ---- */
