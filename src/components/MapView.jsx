@@ -5,6 +5,16 @@ import { useEffect, useRef } from 'react';
 // MapLibre GL 6 dropped its UMD/default-export build; import as a namespace.
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+// MapLibre resolves its worker script at runtime relative to its own module
+// URL, which only works when that file is served standalone. Our production
+// build bundles maplibre-gl's code into one chunk instead, so that
+// resolution points at a URL that was never emitted -- the CDN's SPA
+// fallback then serves index.html (200, text/html) for it, which browsers
+// correctly refuse to run as a module worker (blocked on MIME type). The
+// `?url` import asks Vite to copy this file into dist/assets/ as its own
+// hashed asset and give us the real URL, which setWorkerUrl() then points
+// the library at explicitly.
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 import { cogProtocol, colorScale, setColorFunction, locationValues } from '@geomatico/maplibre-cog-protocol';
 import { readCogMeta } from '../lib/cogMeta.js';
 import { currentRamp } from '../lib/ramp.js';
@@ -17,6 +27,7 @@ const COG_LAYER_ID = 'osmviews-raster';
 let protocolRegistered = false;
 function ensureCogProtocol() {
   if (!protocolRegistered) {
+    maplibregl.setWorkerUrl(maplibreWorkerUrl);
     maplibregl.addProtocol('cog', cogProtocol);
     protocolRegistered = true;
   }
@@ -61,15 +72,22 @@ export default function MapView({ tiffUrl, onCogMeta, onViewportRange, onTapValu
     });
     mapRef.current = map;
     if (import.meta.env.DEV) window.__debugMap = map;
-    // Gate layer setup on this instead of a bare `map.once('load', ...)`
-    // registered later: if 'load' already fired by the time the COG
-    // metadata fetch resolves (a real race, worse under React StrictMode's
-    // double-effect-invocation in dev, which adds an extra async round
-    // trip before the *second*, real map instance's setup starts), a
-    // listener attached after the fact never fires and the layer silently
-    // never gets added. A promise created right alongside the map can't
-    // miss the event.
-    mapLoadedRef.current = new Promise((resolve) => map.once('load', resolve));
+    // Wait for the style's `'style.load'` event, not the Map-level `'load'`
+    // event and not `isStyleLoaded()` -- both of those additionally require
+    // every initial source's tiles to finish loading (MapLibre's
+    // `Style.loaded()` walks every tile manager), which for a basemap
+    // covering the whole world at our starting zoom took well over a
+    // minute in testing against the real CDN. `addSource`/`addLayer` only
+    // need the style JSON/sprite/glyphs parsed and sources/layers
+    // registered, which is exactly what `'style.load'` (fired once, from
+    // inside `Style._load`) signals -- no tile data involved. Set up as a
+    // promise right alongside the map, not a listener registered later: if
+    // the event already fired by the time the COG metadata fetch resolves
+    // (a real race, worse under React StrictMode's double-effect-invocation
+    // in dev, which adds an extra async round trip before the *second*,
+    // real map instance's setup starts), a listener attached after the
+    // fact never fires and the layer silently never gets added.
+    mapLoadedRef.current = new Promise((resolve) => map.once('style.load', resolve));
 
     const syncUrl = makeViewStateSync();
     map.on('moveend', () => {
