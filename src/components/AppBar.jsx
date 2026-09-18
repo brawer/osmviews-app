@@ -4,9 +4,20 @@
 export default function AppBar({ onMenuClick }) {
   return (
     <header className="app-bar">
-      <span className="app-bar__title">
-        <span className="app-bar__title-osm">OSM</span>
-        <span className="app-bar__title-views">Views</span>
+      <span className="app-bar__brand">
+        <a
+          href="https://brawer.ch/"
+          target="_blank"
+          rel="noreferrer"
+          className="app-bar__logo"
+          aria-label="Sascha Brawer's home page"
+        >
+          🌼
+        </a>
+        <span className="app-bar__title">
+          <span className="app-bar__title-osm">OSM</span>
+          <span className="app-bar__title-views">Views</span>
+        </span>
       </span>
       <button
         type="button"
