@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.4](https://github.com/brawer/osmviews-app/compare/v0.1.3...v0.1.4) (2026-09-18)
+
+
+### 🐞 Fixes
+
+* curate basemap labels, fix bridges/buildings over the raster ([#12](https://github.com/brawer/osmviews-app/issues/12)) ([#19](https://github.com/brawer/osmviews-app/issues/19)) ([dd4e9e2](https://github.com/brawer/osmviews-app/commit/dd4e9e2f4e64429a0a351b4938cb6232f7be3a58))
+* remove the underline under the flower emoji link ([#21](https://github.com/brawer/osmviews-app/issues/21)) ([d99ed53](https://github.com/brawer/osmviews-app/commit/d99ed533ff6cb9a05ebeaaaba73d44474cca0eea))
+
 ## [0.1.3](https://github.com/brawer/osmviews-app/compare/v0.1.2...v0.1.3) (2026-09-18)
 
 
