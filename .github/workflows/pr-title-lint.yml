@@ -8,12 +8,19 @@
 # pull_request_target (not pull_request) so this also runs for PRs from
 # forks: it only reads the PR title from the base repo's workflow config, it
 # doesn't need write access to or run any code from the fork.
+#
+# `synchronize` (a new commit pushed to the PR branch) is in the type list
+# alongside `opened`/`edited`/`reopened`: without it, a PR that receives
+# commits after opening never gets a fresh "Validate PR title" run against
+# its new head SHA, so branch protection's required-status-check waits on it
+# forever -- the title didn't change, but the required check is evaluated
+# per commit, and this workflow just never reported anything for the new one.
 
 name: Lint PR title
 
 on:
   pull_request_target:
-    types: [opened, edited, reopened]
+    types: [opened, edited, reopened, synchronize]
 
 permissions: {}
 
