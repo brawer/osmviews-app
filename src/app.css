@@ -29,6 +29,7 @@
   font-size: 1.5rem;
   line-height: 1;
   display: inline-flex;
+  text-decoration: none;
   transition: transform 0.15s ease;
 }
 
