@@ -15,7 +15,27 @@
 // deploy show up.
 
 import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative, sep } from 'node:path';
+import { extname, join, relative, sep } from 'node:path';
+
+// Bunny's Storage API doesn't sniff content type -- it serves back exactly
+// whatever Content-Type a file was uploaded with. Every file here used to
+// go up as application/octet-stream, which Chromium tolerates for a module
+// worker script but Firefox correctly refuses to run ("disallowed MIME
+// type"), breaking every geotiff.js/MapLibre worker on the live site in
+// Firefox. Covers dist/'s current extensions (css, html, js, mjs) plus a
+// few we're likely to add (favicon, source maps, fonts).
+const CONTENT_TYPES = {
+  '.css': 'text/css',
+  '.html': 'text/html',
+  '.js': 'text/javascript',
+  '.mjs': 'text/javascript',
+  '.json': 'application/json',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.ico': 'image/x-icon',
+  '.map': 'application/json',
+  '.woff2': 'font/woff2',
+};
 
 const ZONE = 'osmviews-app';
 // DE (Falkenstein) is this zone's region in production/bunny/storage.tf;
@@ -45,9 +65,10 @@ function walk(dir, root = dir) {
 
 async function upload(path) {
   const body = readFileSync(join('dist', path));
+  const contentType = CONTENT_TYPES[extname(path)] ?? 'application/octet-stream';
   const res = await fetch(`https://${STORAGE_HOST}/${ZONE}/${path}`, {
     method: 'PUT',
-    headers: { AccessKey: accessKey, 'Content-Type': 'application/octet-stream' },
+    headers: { AccessKey: accessKey, 'Content-Type': contentType },
     body,
   });
   if (!res.ok) {
