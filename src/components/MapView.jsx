@@ -183,16 +183,15 @@ export default function MapView({ tiffUrl, onCogMeta, onViewportRange, onTapValu
       if (map.getSource(COG_SOURCE_ID)) return;
       map.addSource(COG_SOURCE_ID, { type: 'raster', url: `cog://${cogUrl}`, tileSize: 256 });
       // Insert above every polygon fill and line -- roads, waterways, water
-      // itself -- but below administrative boundaries and text/icon labels,
-      // so those stay legible over the color layer. OpenFreeMap's "liberty"
-      // style draws boundary_* well before any label layer, so "the first
-      // boundary_* or symbol layer, whichever comes first" is the
-      // insertion point -- loadMinimalBasemapStyle() already trimmed
-      // everything before that layer out of the style entirely, so in
-      // practice this now resolves to the very first remaining layer.
-      // (Not fully style-agnostic -- an unrelated style without
-      // boundary_*-named layers falls back to "before the first symbol
-      // layer", which still keeps labels on top.)
+      // itself -- but below administrative boundaries and the (curated,
+      // see basemapStyle.js) text labels, so those stay legible over the
+      // color layer. loadMinimalBasemapStyle() already trimmed everything
+      // before the boundary layers out of the style entirely, so this
+      // resolves to the very first remaining layer in practice; kept as a
+      // real search (not just styleLayers[0]) so an unrelated style
+      // without boundary_*-named layers still inserts before its first
+      // symbol layer, keeping labels on top, same fallback
+      // loadMinimalBasemapStyle() itself uses.
       const styleLayers = map.getStyle().layers ?? [];
       const beforeId = styleLayers.find((l) => l.id.startsWith('boundary') || l.type === 'symbol')?.id;
       map.addLayer(
