@@ -19,8 +19,8 @@ import { cogProtocol, colorScale, setColorFunction, locationValues } from '@geom
 import { readCogMeta } from '../lib/cogMeta.js';
 import { currentRamp } from '../lib/ramp.js';
 import { parseViewFromPath, makeViewStateSync } from '../lib/urlState.js';
+import { loadMinimalBasemapStyle } from '../lib/basemapStyle.js';
 
-const OPENFREEMAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty';
 const COG_SOURCE_ID = 'osmviews';
 const COG_LAYER_ID = 'osmviews-raster';
 
@@ -55,80 +55,119 @@ function sampleViewportPoints(bounds) {
 export default function MapView({ tiffUrl, onCogMeta, onViewportRange, onTapValue }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
+  // Promise, resolves once mapRef.current is set (the map is constructed).
+  // Needed because construction is now deferred behind the basemap-style
+  // fetch below: the effect that builds the COG layer runs in the same
+  // commit as this one, so it can't just check `mapRef.current` synchronously
+  // any more -- it awaits this instead, which works regardless of which
+  // effect's async work actually finishes first.
+  const mapReadyRef = useRef(null);
   const mapLoadedRef = useRef(null); // Promise, resolves once the map's own style has loaded
   const cogUrlRef = useRef(null);
   const smaxRef = useRef(null);
 
   useEffect(() => {
     ensureCogProtocol();
-    const initialView = parseViewFromPath(window.location.pathname);
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      style: OPENFREEMAP_STYLE,
-      center: [initialView.lng, initialView.lat],
-      zoom: initialView.zoom,
-      maxZoom: 14,
-      attributionControl: { compact: true },
-    });
-    mapRef.current = map;
-    if (import.meta.env.DEV) window.__debugMap = map;
-    // Wait for the style's `'style.load'` event, not the Map-level `'load'`
-    // event and not `isStyleLoaded()` -- both of those additionally require
-    // every initial source's tiles to finish loading (MapLibre's
-    // `Style.loaded()` walks every tile manager), which for a basemap
-    // covering the whole world at our starting zoom took well over a
-    // minute in testing against the real CDN. `addSource`/`addLayer` only
-    // need the style JSON/sprite/glyphs parsed and sources/layers
-    // registered, which is exactly what `'style.load'` (fired once, from
-    // inside `Style._load`) signals -- no tile data involved. Set up as a
-    // promise right alongside the map, not a listener registered later: if
-    // the event already fired by the time the COG metadata fetch resolves
-    // (a real race, worse under React StrictMode's double-effect-invocation
-    // in dev, which adds an extra async round trip before the *second*,
-    // real map instance's setup starts), a listener attached after the
-    // fact never fires and the layer silently never gets added.
-    mapLoadedRef.current = new Promise((resolve) => map.once('style.load', resolve));
-
-    const syncUrl = makeViewStateSync();
-    map.on('moveend', () => {
-      syncUrl({ zoom: map.getZoom(), lat: map.getCenter().lat, lng: map.getCenter().lng });
-      if (cogUrlRef.current && smaxRef.current != null) {
-        Promise.all(
-          sampleViewportPoints(map.getBounds()).map((p) => locationValues(cogUrlRef.current, p, map.getZoom())),
-        ).then((results) => {
-          const values = results.map((r) => r?.[0]).filter((v) => Number.isFinite(v));
-          if (values.length > 0) {
-            onViewportRange({ min: Math.min(...values), max: Math.max(...values) });
-          }
-        });
-      }
+    let cancelled = false;
+    let map;
+    let resolveMapReady;
+    mapReadyRef.current = new Promise((resolve) => {
+      resolveMapReady = resolve;
     });
 
-    map.on('click', (e) => {
-      if (!cogUrlRef.current || smaxRef.current == null) return;
-      locationValues(cogUrlRef.current, { latitude: e.lngLat.lat, longitude: e.lngLat.lng }, map.getZoom()).then(
-        (result) => {
-          const value = result?.[0];
-          if (!Number.isFinite(value)) return;
-          const normalized = Math.min(1, Math.max(0, value / smaxRef.current));
-          onTapValue({ value, normalized, lngLat: e.lngLat });
-        },
-      );
+    // The style is fetched and trimmed (loadMinimalBasemapStyle) before the
+    // map exists, rather than handing MapLibre the bare URL and removing
+    // unwanted layers once loaded: by the time we could remove them, they'd
+    // already have painted one frame of colorful basemap that the opaque
+    // COG layer immediately covers -- exactly the flash this is meant to
+    // avoid, just deferred a few dozen milliseconds.
+    loadMinimalBasemapStyle().then((style) => {
+      if (cancelled) return;
+      const initialView = parseViewFromPath(window.location.pathname);
+      map = new maplibregl.Map({
+        container: containerRef.current,
+        style,
+        center: [initialView.lng, initialView.lat],
+        zoom: initialView.zoom,
+        maxZoom: 14,
+        attributionControl: { compact: true },
+      });
+      mapRef.current = map;
+      if (import.meta.env.DEV) window.__debugMap = map;
+      // Wait for the style's `'style.load'` event, not the Map-level
+      // `'load'` event and not `isStyleLoaded()` -- both of those
+      // additionally require every initial source's tiles to finish
+      // loading (MapLibre's `Style.loaded()` walks every tile manager),
+      // which for a basemap covering the whole world at our starting zoom
+      // took well over a minute in testing against the real CDN.
+      // `addSource`/`addLayer` only need the style JSON/sprite/glyphs
+      // parsed and sources/layers registered, which is exactly what
+      // `'style.load'` (fired once, from inside `Style._load`) signals --
+      // no tile data involved. Set up as a promise right alongside the
+      // map, not a listener registered later: if the event already fired
+      // by the time the COG metadata fetch resolves (a real race, worse
+      // under React StrictMode's double-effect-invocation in dev, which
+      // adds an extra async round trip before the *second*, real map
+      // instance's setup starts), a listener attached after the fact
+      // never fires and the layer silently never gets added.
+      mapLoadedRef.current = new Promise((resolve) => map.once('style.load', resolve));
+
+      const syncUrl = makeViewStateSync();
+      map.on('moveend', () => {
+        syncUrl({ zoom: map.getZoom(), lat: map.getCenter().lat, lng: map.getCenter().lng });
+        if (cogUrlRef.current && smaxRef.current != null) {
+          Promise.all(
+            sampleViewportPoints(map.getBounds()).map((p) => locationValues(cogUrlRef.current, p, map.getZoom())),
+          ).then((results) => {
+            const values = results.map((r) => r?.[0]).filter((v) => Number.isFinite(v));
+            if (values.length > 0) {
+              onViewportRange({ min: Math.min(...values), max: Math.max(...values) });
+            }
+          });
+        }
+      });
+
+      map.on('click', (e) => {
+        if (!cogUrlRef.current || smaxRef.current == null) return;
+        locationValues(cogUrlRef.current, { latitude: e.lngLat.lat, longitude: e.lngLat.lng }, map.getZoom()).then(
+          (result) => {
+            const value = result?.[0];
+            if (!Number.isFinite(value)) return;
+            const normalized = Math.min(1, Math.max(0, value / smaxRef.current));
+            onTapValue({ value, normalized, lngLat: e.lngLat });
+          },
+        );
+      });
+
+      resolveMapReady();
     });
 
-    return () => map.remove();
+    return () => {
+      cancelled = true;
+      // Unblocks the COG-layer effect's `await mapReadyRef.current` if it's
+      // still pending (unmounted before the style fetch resolved) -- its
+      // own `cancelled` check right after makes this a clean no-op.
+      resolveMapReady();
+      map?.remove();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- map is created once; tiffUrl changes handled below
   }, []);
 
   // (Re)build the raster layer whenever the resolved data build changes.
   useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !tiffUrl) return;
+    if (!tiffUrl) return;
 
     const cogUrl = new URL(tiffUrl, window.location.origin).href;
     let cancelled = false;
 
     async function setup() {
+      // The map is constructed asynchronously (see mapReadyRef above), so
+      // this can't just read mapRef.current synchronously -- it may not
+      // exist yet even though this effect already ran.
+      await mapReadyRef.current;
+      if (cancelled) return;
+      const map = mapRef.current;
+
       const [{ smax, histogram }] = await Promise.all([readCogMeta(cogUrl), mapLoadedRef.current]);
       if (cancelled) return;
       cogUrlRef.current = cogUrl;
@@ -148,9 +187,12 @@ export default function MapView({ tiffUrl, onCogMeta, onViewportRange, onTapValu
       // so those stay legible over the color layer. OpenFreeMap's "liberty"
       // style draws boundary_* well before any label layer, so "the first
       // boundary_* or symbol layer, whichever comes first" is the
-      // insertion point. (Not fully style-agnostic -- an unrelated style
-      // without boundary_*-named layers falls back to "before the first
-      // symbol layer", which still keeps labels on top.)
+      // insertion point -- loadMinimalBasemapStyle() already trimmed
+      // everything before that layer out of the style entirely, so in
+      // practice this now resolves to the very first remaining layer.
+      // (Not fully style-agnostic -- an unrelated style without
+      // boundary_*-named layers falls back to "before the first symbol
+      // layer", which still keeps labels on top.)
       const styleLayers = map.getStyle().layers ?? [];
       const beforeId = styleLayers.find((l) => l.id.startsWith('boundary') || l.type === 'symbol')?.id;
       map.addLayer(
