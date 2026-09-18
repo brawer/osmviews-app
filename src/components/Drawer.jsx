@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Sascha Brawer <sascha@brawer.ch>
 // SPDX-License-Identifier: MIT
 
+import { githubIconDataUri, cc0IconDataUri } from '../lib/icons.js';
+
 export default function Drawer({ open, onClose, buildVersion }) {
   return (
     <>
@@ -21,8 +23,14 @@ export default function Drawer({ open, onClose, buildVersion }) {
             OpenStreetMap-based maps, built from a trailing year of OpenStreetMap tile-log data and rebuilt weekly.
             {buildVersion && <> You're viewing the build from {buildVersion}.</>}
           </p>
-          <a href="https://github.com/brawer/osmviews" target="_blank" rel="noreferrer">
-            brawer/osmviews on GitHub
+          <a
+            href="https://github.com/brawer/osmviews"
+            target="_blank"
+            rel="noreferrer"
+            className="drawer__icon-link"
+          >
+            <img src={githubIconDataUri()} alt="" width="16" height="16" />
+            brawer/osmviews
           </a>
         </section>
 
@@ -47,9 +55,13 @@ export default function Drawer({ open, onClose, buildVersion }) {
 
         <section className="drawer__section">
           <h3>Author</h3>
-          <a href="https://brawer.ch/" target="_blank" rel="noreferrer">
-            brawer.ch
-          </a>
+          <p className="drawer__author">
+            <a href="https://brawer.ch/" target="_blank" rel="noreferrer">
+              Sascha Brawer
+            </a>
+            <span aria-hidden="true"> · </span>
+            sascha@brawer.ch
+          </p>
         </section>
 
         <section className="drawer__section drawer__section--license">
@@ -57,9 +69,11 @@ export default function Drawer({ open, onClose, buildVersion }) {
             href="https://creativecommons.org/publicdomain/zero/1.0/"
             target="_blank"
             rel="noreferrer"
+            className="drawer__icon-link"
             aria-label="Data licensed CC0 1.0 Universal"
           >
-            CC0 · Public Domain
+            <img src={cc0IconDataUri()} alt="" width="16" height="16" />
+            Public Domain
           </a>
         </section>
       </nav>
