@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/brawer/osmviews-app/compare/v0.1.2...v0.1.3) (2026-09-18)
+
+
+### 🐞 Fixes
+
+* two Firefox-only bugs -- stuck histogram/click, and worker MIME type ([#14](https://github.com/brawer/osmviews-app/issues/14)) ([6a047e1](https://github.com/brawer/osmviews-app/commit/6a047e1fc0c4255b52be7dedb65d031352fa7830))
+
 ## [0.1.2](https://github.com/brawer/osmviews-app/compare/v0.1.1...v0.1.2) (2026-09-18)
 
 
