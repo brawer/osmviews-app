@@ -125,6 +125,24 @@
   text-decoration: underline;
 }
 
+/* The author line's link sits inline within a sentence (name, then a
+   middle dot, then the plain-text email) rather than as its own block row. */
+.drawer__section p a {
+  display: inline;
+  margin-bottom: 0;
+}
+
+/* Icon + label links (GitHub repo, CC0 badge): icon and text on one line. */
+.drawer__section a.drawer__icon-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.drawer__icon-link img {
+  display: block;
+}
+
 .drawer__section--license a {
   font-size: 0.8rem;
   color: var(--ink-faint);
