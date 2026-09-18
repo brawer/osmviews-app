@@ -4,7 +4,10 @@
 export default function AppBar({ onMenuClick }) {
   return (
     <header className="app-bar">
-      <span className="app-bar__title">OSMViews</span>
+      <span className="app-bar__title">
+        <span className="app-bar__title-osm">OSM</span>
+        <span className="app-bar__title-views">Views</span>
+      </span>
       <button
         type="button"
         className="app-bar__menu-button"

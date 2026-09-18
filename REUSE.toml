@@ -45,9 +45,10 @@ precedence = "aggregate"
 SPDX-FileCopyrightText = "The Organization for Ethical Source"
 SPDX-License-Identifier = "CC-BY-SA-4.0"
 
-# The Karla variable font, self-hosted (same file and license as
-# brawer.ch's copy) rather than loaded cross-origin -- see theme.css's
-# @font-face comment. karla-OFL.txt is the font's own bundled copy of the
+# The Karla variable font, self-hosted (same font and license as
+# brawer.ch's copy, fetched directly from Google Fonts for a wider weight
+# range -- see theme.css's @font-face comment) rather than loaded
+# cross-origin. karla-OFL.txt is the font's own bundled copy of the
 # license text it's under, same content as LICENSES/OFL-1.1.txt.
 [[annotations]]
 path = [

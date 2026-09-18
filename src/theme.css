@@ -10,6 +10,7 @@
   color-scheme: light dark;
 
   --paper: #fafaf7;
+  --paper-dim: #fbf5eb;
   --paper-raised: #ffffff;
   --ink: #242019;
   --ink-soft: #5c5648;
@@ -36,6 +37,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --paper: #1a1613;
+    --paper-dim: #2e271f;
     --paper-raised: #362d23;
     --ink: #f2e9d8;
     --ink-soft: #c9bca5;
@@ -56,16 +58,23 @@
   }
 }
 
-/* Self-hosted, same file and license as brawer.ch (see public/fonts/
-   karla-OFL.txt, SIL Open Font License). One variable-font file (wght
-   400-800, latin subset) covers every weight this app uses.
-   font-display: swap avoids invisible text while the font loads (an
-   explicit <link rel=preload> in index.html starts that fetch as early
-   as possible). */
+/* Self-hosted, same font and license as brawer.ch (see public/fonts/
+   karla-OFL.txt, SIL Open Font License) -- but not byte-identical to
+   brawer/homepage's copy: that one's variable axis only spans wght
+   400-800 (all homepage itself needs), which has no Light weight for
+   the app bar's "Views" (step 6 of the plan's App bar section -- OSM
+   extrabold, Views light). Fetched instead straight from Google Fonts'
+   own latin-subset build with the full wght 200-800 range
+   (fonts.googleapis.com/css2?family=Karla:wght@200..800, the "latin"
+   -- not "latin-ext" -- @font-face block's src, matching brawer.ch's
+   own subset choice) so one file covers both that and everything
+   brawer.ch uses. font-display: swap avoids invisible text while the
+   font loads (an explicit <link rel=preload> in index.html starts
+   that fetch as early as possible). */
 @font-face {
   font-family: 'Karla';
   font-style: normal;
-  font-weight: 400 700;
+  font-weight: 200 800;
   font-display: swap;
   src: url('/fonts/karla-latin-variable.woff2') format('woff2');
 }
