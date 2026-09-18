@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.5](https://github.com/brawer/osmviews-app/compare/v0.1.4...v0.1.5) (2026-09-18)
+
+
+### 🐞 Fixes
+
+* MapLibre worker actually broken in Firefox -- prior "fix" never worked ([#24](https://github.com/brawer/osmviews-app/issues/24)) ([bb69ae2](https://github.com/brawer/osmviews-app/commit/bb69ae2b4eb1982965eba9004749c3456b30502f))
+* move map attribution above the histogram card ([#22](https://github.com/brawer/osmviews-app/issues/22)) ([7695019](https://github.com/brawer/osmviews-app/commit/769501912d6a79d7056d9103afed750df6297e18))
+
 ## [0.1.4](https://github.com/brawer/osmviews-app/compare/v0.1.3...v0.1.4) (2026-09-18)
 
 
