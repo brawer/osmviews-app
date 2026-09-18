@@ -44,3 +44,16 @@ path = "CODE_OF_CONDUCT.md"
 precedence = "aggregate"
 SPDX-FileCopyrightText = "The Organization for Ethical Source"
 SPDX-License-Identifier = "CC-BY-SA-4.0"
+
+# The Karla variable font, self-hosted (same file and license as
+# brawer.ch's copy) rather than loaded cross-origin -- see theme.css's
+# @font-face comment. karla-OFL.txt is the font's own bundled copy of the
+# license text it's under, same content as LICENSES/OFL-1.1.txt.
+[[annotations]]
+path = [
+    "public/fonts/karla-latin-variable.woff2",
+    "public/fonts/karla-OFL.txt",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2019 The Karla Project Authors (https://github.com/googlefonts/karla)"
+SPDX-License-Identifier = "OFL-1.1"
