@@ -13,6 +13,13 @@ SPDX-License-Identifier: MIT
       content="OSMViews: a world-wide ranking of geographic locations by how much they are looked at on OpenStreetMap-based maps."
     />
     <title>OSMViews</title>
+    <!-- Starts the font fetch in parallel with main.css, instead of only
+         after the browser has downloaded+parsed the CSS and reached the
+         @font-face rule inside it. `crossorigin` is required even though
+         the font is same-origin -- fonts always fetch in anonymous-CORS
+         mode, and a preload issued without this attribute is a *different*
+         cache entry the browser then silently fetches a second time. -->
+    <link rel="preload" href="/fonts/karla-latin-variable.woff2" as="font" type="font/woff2" crossorigin />
   </head>
   <body>
     <div id="root"></div>

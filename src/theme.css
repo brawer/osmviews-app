@@ -56,6 +56,41 @@
   }
 }
 
+/* Self-hosted, same file and license as brawer.ch (see public/fonts/
+   karla-OFL.txt, SIL Open Font License). One variable-font file (wght
+   400-800, latin subset) covers every weight this app uses.
+   font-display: swap avoids invisible text while the font loads (an
+   explicit <link rel=preload> in index.html starts that fetch as early
+   as possible). */
+@font-face {
+  font-family: 'Karla';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/karla-latin-variable.woff2') format('woff2');
+}
+
+/* Metric-adjusted fallback for the swap window, identical tuning to
+   brawer.ch's (assets/css/main.css): sits between "Karla" and the plain
+   OS-native stack below, so the initial paint in a system sans doesn't
+   reflow much once Karla finishes loading. These values were derived
+   there empirically (rendered text measured in both fonts via Canvas2D,
+   not taken from either font's OS/2 table -- see that repo's comment for
+   the full rationale) and verified against Karla's own rendered box;
+   reused as-is since it's the same font file. Targets local Arial/
+   Helvetica specifically, falling through to the real stack if neither
+   resolves locally.  */
+@font-face {
+  font-family: 'Karla Fallback';
+  src:
+    local('Arial'),
+    local('Helvetica');
+  size-adjust: 100.42%;
+  ascent-override: 81.65%;
+  descent-override: 24.5%;
+  line-gap-override: 0%;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -71,6 +106,8 @@ body {
   background: var(--paper);
   color: var(--ink);
   font-family:
+    'Karla',
+    'Karla Fallback',
     system-ui,
     -apple-system,
     'Segoe UI',
