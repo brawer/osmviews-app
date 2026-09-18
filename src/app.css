@@ -300,3 +300,17 @@
 .histogram-card__tap-value strong {
   color: var(--accent);
 }
+
+/* MapLibre's own attribution control defaults to the map's bottom-right
+   corner, which the histogram card sits directly on top of (full width on
+   mobile, so there's no free corner to move the control to instead) --
+   without this it was fully hidden under the card. Pushed up above the
+   card's own height instead (140px covers the card's ~126px measured
+   height plus some slack for e.g. text wrapping on a narrow phone).
+   Doubled class selector, not !important: beats maplibre-gl.css's
+   same-specificity .maplibregl-ctrl-bottom-right rule regardless of which
+   stylesheet happens to load first in the bundle. */
+.maplibregl-ctrl-bottom-right.maplibregl-ctrl-bottom-right,
+.maplibregl-ctrl-bottom-left.maplibregl-ctrl-bottom-left {
+  bottom: 140px;
+}
