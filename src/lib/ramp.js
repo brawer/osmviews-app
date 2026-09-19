@@ -15,11 +15,3 @@ export function prefersDark() {
 export function currentRamp() {
   return prefersDark() ? RAMP_DARK : RAMP_LIGHT;
 }
-
-// A CSS linear-gradient() covering the ramp, for the histogram card's
-// Tufte-style color strip.
-export function rampCssGradient(stops) {
-  const n = stops.length - 1;
-  const parts = stops.map((color, i) => `${color} ${((i / n) * 100).toFixed(2)}%`);
-  return `linear-gradient(to right, ${parts.join(', ')})`;
-}

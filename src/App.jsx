@@ -12,7 +12,7 @@ export default function App() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [datapackage, setDatapackage] = useState(null);
   const [newVersion, setNewVersion] = useState(null);
-  const [cogMeta, setCogMeta] = useState(null); // { smax, histogram }
+  const [cogMeta, setCogMeta] = useState(null); // { smax }
   const [viewportRange, setViewportRange] = useState(null); // { min, max } in ln-space
   const [tapValue, setTapValue] = useState(null); // { value, normalized, lngLat }
 
@@ -42,13 +42,7 @@ export default function App() {
         </button>
       )}
 
-      <HistogramCard
-        histogram={cogMeta?.histogram}
-        smax={cogMeta?.smax}
-        buildVersion={datapackage?.version}
-        viewportRange={viewportRange}
-        tapValue={tapValue}
-      />
+      <HistogramCard smax={cogMeta?.smax} viewportRange={viewportRange} tapValue={tapValue} />
     </div>
   );
 }
