@@ -194,11 +194,11 @@ export default function MapView({ tiffUrl, onCogMeta, onViewportRange, onTapValu
       if (cancelled) return;
       const map = mapRef.current;
 
-      const [{ smax, histogram }] = await Promise.all([readCogMeta(cogUrl), mapLoadedRef.current]);
+      const [{ smax }] = await Promise.all([readCogMeta(cogUrl), mapLoadedRef.current]);
       if (cancelled) return;
       cogUrlRef.current = cogUrl;
       smaxRef.current = smax;
-      onCogMeta({ smax, histogram });
+      onCogMeta({ smax });
 
       const interpolate = colorScale({ customColors: currentRamp(), min: 0, max: smax, isContinuous: true });
       setColorFunction(cogUrl, (pixel, color) => {

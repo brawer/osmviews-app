@@ -1,66 +1,129 @@
 // SPDX-FileCopyrightText: 2026 Sascha Brawer <sascha@brawer.ch>
 // SPDX-License-Identifier: MIT
 
-import { useMemo } from 'react';
-import { currentRamp, rampCssGradient } from '../lib/ramp.js';
+// No histogram, on purpose: the actual bin counts aren't visually
+// interesting (see the mockup rounds this replaced), and dimming the
+// covered/uncovered parts of the color ramp plus a tap marker says more
+// with less ink. Ramp colors come from theme.css's --ramp-0..--ramp-5 so
+// this stays in sync with the map layer and the light/dark theme without
+// any JS-side color table.
 
-// Bars are log-scaled -- the RAT's own bucket-0 count (everywhere the
-// density rounds to zero: most of the planet) dwarfs every other bucket by
-// 2-4 orders of magnitude, exactly as docs/downloads.md warns ("plot the
-// counts on a log axis").
-function barHeight(count, maxLogCount) {
-  if (count <= 0 || maxLogCount === 0) return 0;
-  return Math.log10(count + 1) / maxLogCount;
+const W = 300;
+const H = 50;
+const PAD_L = 4;
+const PAD_R = 4;
+const BAR_Y = 18;
+const BAR_H = 16;
+const PLOT_W = W - PAD_L - PAD_R;
+
+// Maps a raw pixel value (domain [0, smax]) to an SVG x-coordinate.
+function sx(value, smax) {
+  const clamped = Math.max(0, Math.min(smax, value));
+  return PAD_L + (clamped / smax) * PLOT_W;
 }
 
-export default function HistogramCard({ histogram, smax, buildVersion, viewportRange, tapValue }) {
-  const ramp = useMemo(() => currentRamp(), []);
-  const gradient = useMemo(() => rampCssGradient(ramp), [ramp]);
+// Keeps a label's text-anchor from running off the edge of the viewBox.
+function edgeAwareAnchor(x) {
+  if (x < 24) return 'start';
+  if (x > W - 24) return 'end';
+  return 'middle';
+}
 
-  const maxLogCount = useMemo(() => {
-    if (!histogram) return 0;
-    return Math.max(...histogram.bins.map((b) => Math.log10(b.count + 1)));
-  }, [histogram]);
-
-  if (!histogram || !smax) {
+export default function HistogramCard({ smax, viewportRange, tapValue }) {
+  if (!smax) {
     return (
       <div className="histogram-card histogram-card--loading">
-        <span>Loading data distribution…</span>
+        <span>Loading data range…</span>
       </div>
     );
   }
 
-  const markerPct = tapValue ? (tapValue.value / smax) * 100 : null;
+  const loX = viewportRange ? sx(viewportRange.min, smax) : null;
+  const hiX = viewportRange ? sx(viewportRange.max, smax) : null;
+  const showDimLeft = viewportRange && viewportRange.min > 0;
+  const showDimRight = viewportRange && viewportRange.max < smax;
+
+  const markerX = tapValue ? sx(tapValue.value, smax) : null;
 
   return (
     <div className="histogram-card">
-      <div className="histogram-card__bars">
-        {histogram.bins.map((bin, i) => {
-          const mid = (bin.min + bin.max) / 2;
-          const inViewport = !viewportRange || (mid >= viewportRange.min && mid <= viewportRange.max);
-          return (
-            <div
-              key={i}
-              className="histogram-card__bar"
-              style={{
-                height: `${barHeight(bin.count, maxLogCount) * 100}%`,
-                background: ramp[Math.min(ramp.length - 1, Math.floor((mid / smax) * ramp.length))],
-                opacity: inViewport ? 1 : 0.25,
-              }}
+      <svg
+        className="histogram-card__viz"
+        viewBox={`0 0 ${W} ${H}`}
+        role="img"
+        aria-label="View-density color ramp, showing the range visible in the current map view"
+      >
+        <defs>
+          <linearGradient id="histogram-ramp" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" className="histogram-card__stop histogram-card__stop--0" />
+            <stop offset="20%" className="histogram-card__stop histogram-card__stop--1" />
+            <stop offset="40%" className="histogram-card__stop histogram-card__stop--2" />
+            <stop offset="60%" className="histogram-card__stop histogram-card__stop--3" />
+            <stop offset="80%" className="histogram-card__stop histogram-card__stop--4" />
+            <stop offset="100%" className="histogram-card__stop histogram-card__stop--5" />
+          </linearGradient>
+          <clipPath id="histogram-pill-clip">
+            <rect x={PAD_L} y={BAR_Y} width={PLOT_W} height={BAR_H} rx={BAR_H / 2} />
+          </clipPath>
+        </defs>
+
+        <g clipPath="url(#histogram-pill-clip)">
+          <rect x={PAD_L} y={BAR_Y} width={PLOT_W} height={BAR_H} fill="url(#histogram-ramp)" />
+          {showDimLeft && (
+            <rect className="histogram-card__dim" x={PAD_L} y={BAR_Y} width={loX - PAD_L} height={BAR_H} />
+          )}
+          {showDimRight && (
+            <rect
+              className="histogram-card__dim"
+              x={hiX}
+              y={BAR_Y}
+              width={PAD_L + PLOT_W - hiX}
+              height={BAR_H}
             />
-          );
-        })}
-        {markerPct !== null && <div className="histogram-card__marker" style={{ left: `${markerPct}%` }} />}
-      </div>
-      <div className="histogram-card__ramp-strip" style={{ background: gradient }} />
-      <div className="histogram-card__footer">
-        <span className="histogram-card__version">Build {buildVersion}</span>
-        {tapValue && (
-          <span className="histogram-card__tap-value">
-            Selected: <strong>{tapValue.normalized.toFixed(2)}</strong> (0.0–1.0)
-          </span>
+          )}
+        </g>
+
+        {showDimLeft && (
+          <text
+            className="histogram-card__bound-label"
+            x={loX < 24 ? loX + 3 : loX - 3}
+            y={BAR_Y + BAR_H + 15}
+            textAnchor={loX < 24 ? 'start' : 'end'}
+          >
+            {(viewportRange.min / smax).toFixed(3)}
+          </text>
         )}
-      </div>
+        {showDimRight && (
+          <text
+            className="histogram-card__bound-label"
+            x={hiX > W - 24 ? hiX - 3 : hiX + 3}
+            y={BAR_Y + BAR_H + 15}
+            textAnchor={hiX > W - 24 ? 'end' : 'start'}
+          >
+            {(viewportRange.max / smax).toFixed(3)}
+          </text>
+        )}
+
+        {tapValue && (
+          <>
+            <line
+              className="histogram-card__marker"
+              x1={markerX}
+              x2={markerX}
+              y1={BAR_Y - 5}
+              y2={BAR_Y + BAR_H + 5}
+            />
+            <text
+              className="histogram-card__marker-label"
+              x={markerX}
+              y={BAR_Y - 9}
+              textAnchor={edgeAwareAnchor(markerX)}
+            >
+              {tapValue.normalized.toFixed(3)}
+            </text>
+          </>
+        )}
+      </svg>
     </div>
   );
 }
