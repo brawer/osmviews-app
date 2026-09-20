@@ -65,7 +65,7 @@ export default function Drawer({ open, onClose, buildVersion }) {
         </section>
 
         <section className="drawer__section">
-          <h3>Map tiles</h3>
+          <h3>Map labels</h3>
           <p>
             <a href="https://openfreemap.org/" target="_blank" rel="noreferrer">
               OpenFreeMap
