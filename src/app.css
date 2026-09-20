@@ -308,3 +308,61 @@
   fill: var(--accent);
   font-variant-numeric: tabular-nums;
 }
+
+/* ---- Tap loupe ----
+   Fixed rim/vignette colors rather than theme tokens: this is meant to
+   read as a physical lens laid over the map, the same in light or dark
+   mode, not a piece of themed app chrome. */
+
+.tap-loupe {
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 5;
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.95),
+    0 0 0 4.5px rgba(36, 32, 25, 0.15),
+    0 14px 34px rgba(36, 32, 25, 0.4);
+}
+
+.tap-loupe__map {
+  position: absolute;
+  inset: 0;
+}
+
+/* Clear over the middle so the actual pixel color stays legible; only
+   tints and vignettes near the rim. The "circle farthest-side" size
+   keyword matters: without it, a radial-gradient on a square box defaults
+   to "farthest-corner" (the diagonal, ~113px here) rather than the 80px
+   radius of the circle actually visible after the clip above -- stops
+   would land past the visible edge, entirely invisible. */
+.tap-loupe__sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle farthest-side at 50% 50%,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0) 44%,
+    rgba(255, 255, 255, 0.16) 66%,
+    rgba(255, 255, 255, 0.03) 80%,
+    rgba(20, 17, 12, 0.3) 100%
+  );
+}
+
+.tap-loupe__dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 1.5px rgba(36, 32, 25, 0.5),
+    0 0 0 2.5px rgba(255, 255, 255, 0.8),
+    0 1px 3px rgba(0, 0, 0, 0.25);
+}
