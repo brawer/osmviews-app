@@ -231,6 +231,12 @@ export default function MapView({ tiffUrl, onCogMeta, onViewportRange, onTapValu
             // with no more real detail, so fade it out and let the
             // basemap carry street-level detail instead.
             'raster-opacity': ['interpolate', ['linear'], ['zoom'], 10, 1, 13, 0.55],
+            // This is discrete per-pixel grid data, not a continuous field
+            // -- MapLibre's default bilinear resampling blurs adjacent
+            // cells together on overzoom, which reads as a rendering glitch
+            // rather than what it actually is (a coarser grid cell shown
+            // bigger). Nearest-neighbor keeps cell edges sharp instead.
+            'raster-resampling': 'nearest',
           },
         },
         beforeId,
