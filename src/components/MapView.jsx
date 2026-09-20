@@ -17,6 +17,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 import { cogProtocol, colorScale, setColorFunction, locationValues } from '@geomatico/maplibre-cog-protocol';
 import { readCogMeta } from '../lib/cogMeta.js';
+import { computeViewportRange } from '../lib/viewportRange.js';
 import { currentRamp } from '../lib/ramp.js';
 import { parseViewFromPath, makeViewStateSync } from '../lib/urlState.js';
 import { loadMinimalBasemapStyle } from '../lib/basemapStyle.js';
@@ -33,39 +34,16 @@ function ensureCogProtocol() {
   }
 }
 
-// A handful of sample points spanning the current viewport, used to
-// approximate the visible value range for the ramp card's greyed-out
-// range indicator (step 8 of the plan) -- a 4x4 grid of locationValues()
-// calls is cheap (each reads one already-cached/nearby tile) and avoids
-// reaching into the COG protocol's internal tile cache.
-function sampleViewportPoints(bounds) {
-  const points = [];
-  const steps = 4;
-  for (let i = 0; i <= steps; i++) {
-    for (let j = 0; j <= steps; j++) {
-      points.push({
-        longitude: bounds.getWest() + ((bounds.getEast() - bounds.getWest()) * i) / steps,
-        latitude: bounds.getSouth() + ((bounds.getNorth() - bounds.getSouth()) * j) / steps,
-      });
-    }
-  }
-  return points;
-}
-
-// Samples the current viewport and reports its value range, for the ramp
-// card's dimming -- shared between the 'moveend' handler (pan/zoom) and the
+// Reports the current viewport's true value range, for the ramp card's
+// dimming -- shared between the 'moveend' handler (pan/zoom) and the
 // initial layer setup below (deep links, so dimming doesn't wait for the
-// user's first pan).
-function updateViewportRange(map, cogUrl, smax, onViewportRange) {
-  if (!cogUrl || smax == null) return;
-  Promise.all(sampleViewportPoints(map.getBounds()).map((p) => locationValues(cogUrl, p, map.getZoom()))).then(
-    (results) => {
-      const values = results.map((r) => r?.[0]).filter((v) => Number.isFinite(v));
-      if (values.length > 0) {
-        onViewportRange({ min: Math.min(...values), max: Math.max(...values) });
-      }
-    },
-  );
+// user's first pan). See viewportRange.js for why this reads the COG's
+// overview pyramid instead of point-sampling.
+function updateViewportRange(map, tiff, onViewportRange) {
+  if (!tiff) return;
+  computeViewportRange(tiff, map.getBounds()).then((range) => {
+    if (range) onViewportRange(range);
+  });
 }
 
 export default function MapView({ tiffUrl, onCogMeta, onViewportRange, onTapValue }) {
@@ -81,6 +59,7 @@ export default function MapView({ tiffUrl, onCogMeta, onViewportRange, onTapValu
   const mapLoadedRef = useRef(null); // Promise, resolves once the map's own style has loaded
   const cogUrlRef = useRef(null);
   const smaxRef = useRef(null);
+  const cogTiffRef = useRef(null);
 
   useEffect(() => {
     ensureCogProtocol();
@@ -134,7 +113,7 @@ export default function MapView({ tiffUrl, onCogMeta, onViewportRange, onTapValu
       const syncUrl = makeViewStateSync();
       map.on('moveend', () => {
         syncUrl({ zoom: map.getZoom(), lat: map.getCenter().lat, lng: map.getCenter().lng });
-        updateViewportRange(map, cogUrlRef.current, smaxRef.current, onViewportRange);
+        updateViewportRange(map, cogTiffRef.current, onViewportRange);
       });
 
       map.on('click', (e) => {
@@ -178,10 +157,11 @@ export default function MapView({ tiffUrl, onCogMeta, onViewportRange, onTapValu
       if (cancelled) return;
       const map = mapRef.current;
 
-      const [{ smax }] = await Promise.all([readCogMeta(cogUrl), mapLoadedRef.current]);
+      const [{ smax, tiff }] = await Promise.all([readCogMeta(cogUrl), mapLoadedRef.current]);
       if (cancelled) return;
       cogUrlRef.current = cogUrl;
       smaxRef.current = smax;
+      cogTiffRef.current = tiff;
       onCogMeta({ smax });
 
       const interpolate = colorScale({ customColors: currentRamp(), min: 0, max: smax, isContinuous: true });
@@ -230,7 +210,7 @@ export default function MapView({ tiffUrl, onCogMeta, onViewportRange, onTapValu
       // cached, matching the "or, if cached, immediately" case.
       map.once('idle', () => {
         if (cancelled) return;
-        updateViewportRange(map, cogUrl, smax, onViewportRange);
+        updateViewportRange(map, tiff, onViewportRange);
       });
     }
     setup().catch((err) => console.error('Failed to set up the OSMViews raster layer:', err));
