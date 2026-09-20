@@ -232,7 +232,7 @@
    8px right padding, see .app-bar above); a flush 0px inset read as a
    layout bug rather than a deliberate edge-to-edge sheet. */
 
-.histogram-card {
+.ramp-card {
   position: absolute;
   inset: auto 8px 0 8px;
   z-index: 10;
@@ -245,46 +245,46 @@
 }
 
 @media (min-width: 540px) {
-  .histogram-card {
+  .ramp-card {
     inset: auto 16px 16px auto;
     left: auto;
   }
 }
 
-.histogram-card--loading {
+.ramp-card--loading {
   color: var(--ink-faint);
   font-size: 0.85rem;
   text-align: center;
   padding: 16px;
 }
 
-.histogram-card__viz {
+.ramp-card__viz {
   display: block;
   width: 100%;
   height: auto;
 }
 
-.histogram-card__stop--0 {
+.ramp-card__stop--0 {
   stop-color: var(--ramp-0);
 }
 
-.histogram-card__stop--1 {
+.ramp-card__stop--1 {
   stop-color: var(--ramp-1);
 }
 
-.histogram-card__stop--2 {
+.ramp-card__stop--2 {
   stop-color: var(--ramp-2);
 }
 
-.histogram-card__stop--3 {
+.ramp-card__stop--3 {
   stop-color: var(--ramp-3);
 }
 
-.histogram-card__stop--4 {
+.ramp-card__stop--4 {
   stop-color: var(--ramp-4);
 }
 
-.histogram-card__stop--5 {
+.ramp-card__stop--5 {
   stop-color: var(--ramp-5);
 }
 
@@ -292,24 +292,24 @@
    sharp-edged overlay rather than a tapered/gradient fade -- the viewport
    boundary is an exact cutoff, and a soft gradient would visually claim
    more uncertainty than that. */
-.histogram-card__dim {
+.ramp-card__dim {
   fill: var(--paper-dim);
   fill-opacity: 0.88;
 }
 
-.histogram-card__bound-label {
+.ramp-card__bound-label {
   font-size: 9px;
   fill: var(--ink);
   fill-opacity: 0.38;
   font-variant-numeric: tabular-nums;
 }
 
-.histogram-card__marker {
+.ramp-card__marker {
   stroke: var(--ink);
   stroke-width: 1.5;
 }
 
-.histogram-card__marker-label {
+.ramp-card__marker-label {
   font-size: 12px;
   font-weight: 700;
   fill: var(--accent);
@@ -317,7 +317,7 @@
 }
 
 /* MapLibre's own attribution control defaults to the map's bottom-right
-   corner, which the histogram card sits directly on top of (full width on
+   corner, which the ramp card sits directly on top of (full width on
    mobile, so there's no free corner to move the control to instead) --
    without this it was fully hidden under the card. Pushed up above the
    card's own height instead (140px covers the card's ~126px measured
@@ -330,7 +330,7 @@
   bottom: 140px;
 }
 
-/* Right-align with the histogram card at each breakpoint (0 on mobile --
+/* Right-align with the ramp card at each breakpoint (0 on mobile --
    flush to the edge, same as the full-width card -- 16px once the card
    floats with its own right margin from min-width: 540px). Longhand
    margin-right, not maplibre-gl.css's shorthand `margin: 0 10px 10px 0`

@@ -34,7 +34,7 @@ function ensureCogProtocol() {
 }
 
 // A handful of sample points spanning the current viewport, used to
-// approximate the visible value range for the histogram card's greyed-out
+// approximate the visible value range for the ramp card's greyed-out
 // range indicator (step 8 of the plan) -- a 4x4 grid of locationValues()
 // calls is cheap (each reads one already-cached/nearby tile) and avoids
 // reaching into the COG protocol's internal tile cache.
