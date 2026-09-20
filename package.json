@@ -1,6 +1,6 @@
 {
   "name": "osmviews-app",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "private": true,
   "type": "module",
   "description": "Map-centric web app for OSMViews, a world-wide ranking of geographic locations by OpenStreetMap view density.",
