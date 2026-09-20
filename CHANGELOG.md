@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.7](https://github.com/brawer/osmviews-app/compare/v0.1.6...v0.1.7) (2026-09-20)
+
+
+### 🐞 Fixes
+
+* compute the ramp card's viewport range from the COG's overview pyramid ([#34](https://github.com/brawer/osmviews-app/issues/34)) ([b399f76](https://github.com/brawer/osmviews-app/commit/b399f76515db6539285a4e6a42e5b877364063dd))
+* dim the ramp card on initial load too, not just after panning ([#33](https://github.com/brawer/osmviews-app/issues/33)) ([c7d6a42](https://github.com/brawer/osmviews-app/commit/c7d6a420a0708b50ab796a3c5e407033dd4ec0b4))
+* show the bare ramp pill instead of loading text ([#31](https://github.com/brawer/osmviews-app/issues/31)) ([900b17b](https://github.com/brawer/osmviews-app/commit/900b17bcaa43b32c18000c32c22a8b971a4adb21))
+
 ## [0.1.6](https://github.com/brawer/osmviews-app/compare/v0.1.5...v0.1.6) (2026-09-20)
 
 
