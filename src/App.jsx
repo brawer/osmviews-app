@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import MapView from './components/MapView.jsx';
 import AppBar from './components/AppBar.jsx';
 import Drawer from './components/Drawer.jsx';
-import HistogramCard from './components/HistogramCard.jsx';
+import RampCard from './components/RampCard.jsx';
 import { watchDatapackage } from './lib/datapackage.js';
 
 export default function App() {
@@ -42,7 +42,7 @@ export default function App() {
         </button>
       )}
 
-      <HistogramCard smax={cogMeta?.smax} viewportRange={viewportRange} tapValue={tapValue} />
+      <RampCard smax={cogMeta?.smax} viewportRange={viewportRange} tapValue={tapValue} />
     </div>
   );
 }

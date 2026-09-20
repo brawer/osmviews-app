@@ -1,12 +1,12 @@
 // SPDX-FileCopyrightText: 2026 Sascha Brawer <sascha@brawer.ch>
 // SPDX-License-Identifier: MIT
 
-// No histogram, on purpose: the actual bin counts aren't visually
-// interesting (see the mockup rounds this replaced), and dimming the
-// covered/uncovered parts of the color ramp plus a tap marker says more
-// with less ink. Ramp colors come from theme.css's --ramp-0..--ramp-5 so
-// this stays in sync with the map layer and the light/dark theme without
-// any JS-side color table.
+// Not a histogram: the actual bin counts weren't visually interesting
+// (see the mockup rounds this replaced), and dimming the covered/
+// uncovered parts of the color ramp plus a tap marker says more with less
+// ink. Ramp colors come from theme.css's --ramp-0..--ramp-5 so this stays
+// in sync with the map layer and the light/dark theme without any
+// JS-side color table.
 
 const W = 300;
 const H = 50;
@@ -29,10 +29,10 @@ function edgeAwareAnchor(x) {
   return 'middle';
 }
 
-export default function HistogramCard({ smax, viewportRange, tapValue }) {
+export default function RampCard({ smax, viewportRange, tapValue }) {
   if (!smax) {
     return (
-      <div className="histogram-card histogram-card--loading">
+      <div className="ramp-card ramp-card--loading">
         <span>Loading data range…</span>
       </div>
     );
@@ -46,35 +46,35 @@ export default function HistogramCard({ smax, viewportRange, tapValue }) {
   const markerX = tapValue ? sx(tapValue.value, smax) : null;
 
   return (
-    <div className="histogram-card">
+    <div className="ramp-card">
       <svg
-        className="histogram-card__viz"
+        className="ramp-card__viz"
         viewBox={`0 0 ${W} ${H}`}
         role="img"
         aria-label="View-density color ramp, showing the range visible in the current map view"
       >
         <defs>
-          <linearGradient id="histogram-ramp" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" className="histogram-card__stop histogram-card__stop--0" />
-            <stop offset="20%" className="histogram-card__stop histogram-card__stop--1" />
-            <stop offset="40%" className="histogram-card__stop histogram-card__stop--2" />
-            <stop offset="60%" className="histogram-card__stop histogram-card__stop--3" />
-            <stop offset="80%" className="histogram-card__stop histogram-card__stop--4" />
-            <stop offset="100%" className="histogram-card__stop histogram-card__stop--5" />
+          <linearGradient id="ramp-gradient" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" className="ramp-card__stop ramp-card__stop--0" />
+            <stop offset="20%" className="ramp-card__stop ramp-card__stop--1" />
+            <stop offset="40%" className="ramp-card__stop ramp-card__stop--2" />
+            <stop offset="60%" className="ramp-card__stop ramp-card__stop--3" />
+            <stop offset="80%" className="ramp-card__stop ramp-card__stop--4" />
+            <stop offset="100%" className="ramp-card__stop ramp-card__stop--5" />
           </linearGradient>
-          <clipPath id="histogram-pill-clip">
+          <clipPath id="ramp-pill-clip">
             <rect x={PAD_L} y={BAR_Y} width={PLOT_W} height={BAR_H} rx={BAR_H / 2} />
           </clipPath>
         </defs>
 
-        <g clipPath="url(#histogram-pill-clip)">
-          <rect x={PAD_L} y={BAR_Y} width={PLOT_W} height={BAR_H} fill="url(#histogram-ramp)" />
+        <g clipPath="url(#ramp-pill-clip)">
+          <rect x={PAD_L} y={BAR_Y} width={PLOT_W} height={BAR_H} fill="url(#ramp-gradient)" />
           {showDimLeft && (
-            <rect className="histogram-card__dim" x={PAD_L} y={BAR_Y} width={loX - PAD_L} height={BAR_H} />
+            <rect className="ramp-card__dim" x={PAD_L} y={BAR_Y} width={loX - PAD_L} height={BAR_H} />
           )}
           {showDimRight && (
             <rect
-              className="histogram-card__dim"
+              className="ramp-card__dim"
               x={hiX}
               y={BAR_Y}
               width={PAD_L + PLOT_W - hiX}
@@ -85,7 +85,7 @@ export default function HistogramCard({ smax, viewportRange, tapValue }) {
 
         {showDimLeft && (
           <text
-            className="histogram-card__bound-label"
+            className="ramp-card__bound-label"
             x={loX < 24 ? loX + 3 : loX - 3}
             y={BAR_Y + BAR_H + 15}
             textAnchor={loX < 24 ? 'start' : 'end'}
@@ -95,7 +95,7 @@ export default function HistogramCard({ smax, viewportRange, tapValue }) {
         )}
         {showDimRight && (
           <text
-            className="histogram-card__bound-label"
+            className="ramp-card__bound-label"
             x={hiX > W - 24 ? hiX - 3 : hiX + 3}
             y={BAR_Y + BAR_H + 15}
             textAnchor={hiX > W - 24 ? 'end' : 'start'}
@@ -107,14 +107,14 @@ export default function HistogramCard({ smax, viewportRange, tapValue }) {
         {tapValue && (
           <>
             <line
-              className="histogram-card__marker"
+              className="ramp-card__marker"
               x1={markerX}
               x2={markerX}
               y1={BAR_Y - 5}
               y2={BAR_Y + BAR_H + 5}
             />
             <text
-              className="histogram-card__marker-label"
+              className="ramp-card__marker-label"
               x={markerX}
               y={BAR_Y - 9}
               textAnchor={edgeAwareAnchor(markerX)}
