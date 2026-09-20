@@ -64,13 +64,30 @@ export default function Drawer({ open, onClose, buildVersion }) {
           </p>
         </section>
 
+        <section className="drawer__section">
+          <h3>Map tiles</h3>
+          <p>
+            <a href="https://openfreemap.org/" target="_blank" rel="noreferrer">
+              OpenFreeMap
+            </a>
+            {' '}&middot;{' '}
+            <a href="https://www.openmaptiles.org/" target="_blank" rel="noreferrer">
+              OpenMapTiles
+            </a>
+            {' '}&middot; Data from{' '}
+            <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
+              OpenStreetMap
+            </a>
+          </p>
+        </section>
+
         <section className="drawer__section drawer__section--license">
           <a
             href="https://creativecommons.org/publicdomain/zero/1.0/"
             target="_blank"
             rel="noreferrer"
             className="drawer__icon-link"
-            aria-label="Data licensed CC0 1.0 Universal"
+            aria-label="OSMViews data licensed CC0 1.0 Universal"
           >
             <img src={cc0IconDataUri()} alt="" width="16" height="16" />
             Public Domain

@@ -315,34 +315,3 @@
   fill: var(--accent);
   font-variant-numeric: tabular-nums;
 }
-
-/* MapLibre's own attribution control defaults to the map's bottom-right
-   corner, which the ramp card sits directly on top of (full width on
-   mobile, so there's no free corner to move the control to instead) --
-   without this it was fully hidden under the card. Pushed up above the
-   card's own height instead (140px covers the card's ~126px measured
-   height plus some slack for e.g. text wrapping on a narrow phone).
-   Doubled class selector, not !important: beats maplibre-gl.css's
-   same-specificity .maplibregl-ctrl-bottom-right rule regardless of which
-   stylesheet happens to load first in the bundle. */
-.maplibregl-ctrl-bottom-right.maplibregl-ctrl-bottom-right,
-.maplibregl-ctrl-bottom-left.maplibregl-ctrl-bottom-left {
-  bottom: 140px;
-}
-
-/* Right-align with the ramp card at each breakpoint (0 on mobile --
-   flush to the edge, same as the full-width card -- 16px once the card
-   floats with its own right margin from min-width: 540px). Longhand
-   margin-right, not maplibre-gl.css's shorthand `margin: 0 10px 10px 0`
-   on the same selector: leaves its bottom margin alone (part of what the
-   140px offset above already accounts for). */
-.maplibregl-ctrl-bottom-right.maplibregl-ctrl-bottom-right .maplibregl-ctrl {
-  margin-right: 0;
-}
-
-@media (min-width: 540px) {
-  .maplibregl-ctrl-bottom-right.maplibregl-ctrl-bottom-right .maplibregl-ctrl {
-    margin-right: 16px;
-  }
-}
-
