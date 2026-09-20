@@ -30,20 +30,17 @@ function edgeAwareAnchor(x) {
 }
 
 export default function RampCard({ smax, viewportRange, tapValue }) {
-  if (!smax) {
-    return (
-      <div className="ramp-card ramp-card--loading">
-        <span>Loading data range…</span>
-      </div>
-    );
-  }
+  // MapView only ever reports a viewportRange/tapValue once smax itself has
+  // loaded (both are gated on smaxRef.current there), so these stay null
+  // together with smax -- rendering the bare pill in the meantime instead
+  // of a "Loading..." placeholder avoids a state swap/flicker for what's
+  // otherwise a near-instant load.
+  const loX = smax && viewportRange ? sx(viewportRange.min, smax) : null;
+  const hiX = smax && viewportRange ? sx(viewportRange.max, smax) : null;
+  const showDimLeft = smax && viewportRange && viewportRange.min > 0;
+  const showDimRight = smax && viewportRange && viewportRange.max < smax;
 
-  const loX = viewportRange ? sx(viewportRange.min, smax) : null;
-  const hiX = viewportRange ? sx(viewportRange.max, smax) : null;
-  const showDimLeft = viewportRange && viewportRange.min > 0;
-  const showDimRight = viewportRange && viewportRange.max < smax;
-
-  const markerX = tapValue ? sx(tapValue.value, smax) : null;
+  const markerX = smax && tapValue ? sx(tapValue.value, smax) : null;
 
   return (
     <div className="ramp-card">
