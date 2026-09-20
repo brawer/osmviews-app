@@ -52,6 +52,22 @@ function sampleViewportPoints(bounds) {
   return points;
 }
 
+// Samples the current viewport and reports its value range, for the ramp
+// card's dimming -- shared between the 'moveend' handler (pan/zoom) and the
+// initial layer setup below (deep links, so dimming doesn't wait for the
+// user's first pan).
+function updateViewportRange(map, cogUrl, smax, onViewportRange) {
+  if (!cogUrl || smax == null) return;
+  Promise.all(sampleViewportPoints(map.getBounds()).map((p) => locationValues(cogUrl, p, map.getZoom()))).then(
+    (results) => {
+      const values = results.map((r) => r?.[0]).filter((v) => Number.isFinite(v));
+      if (values.length > 0) {
+        onViewportRange({ min: Math.min(...values), max: Math.max(...values) });
+      }
+    },
+  );
+}
+
 export default function MapView({ tiffUrl, onCogMeta, onViewportRange, onTapValue }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
@@ -118,16 +134,7 @@ export default function MapView({ tiffUrl, onCogMeta, onViewportRange, onTapValu
       const syncUrl = makeViewStateSync();
       map.on('moveend', () => {
         syncUrl({ zoom: map.getZoom(), lat: map.getCenter().lat, lng: map.getCenter().lng });
-        if (cogUrlRef.current && smaxRef.current != null) {
-          Promise.all(
-            sampleViewportPoints(map.getBounds()).map((p) => locationValues(cogUrlRef.current, p, map.getZoom())),
-          ).then((results) => {
-            const values = results.map((r) => r?.[0]).filter((v) => Number.isFinite(v));
-            if (values.length > 0) {
-              onViewportRange({ min: Math.min(...values), max: Math.max(...values) });
-            }
-          });
-        }
+        updateViewportRange(map, cogUrlRef.current, smaxRef.current, onViewportRange);
       });
 
       map.on('click', (e) => {
@@ -218,6 +225,13 @@ export default function MapView({ tiffUrl, onCogMeta, onViewportRange, onTapValu
         },
         beforeId,
       );
+      // 'idle' fires once every source has finished loading and a frame has
+      // rendered -- including near-instantly if these tiles are already
+      // cached, matching the "or, if cached, immediately" case.
+      map.once('idle', () => {
+        if (cancelled) return;
+        updateViewportRange(map, cogUrl, smax, onViewportRange);
+      });
     }
     setup().catch((err) => console.error('Failed to set up the OSMViews raster layer:', err));
 
