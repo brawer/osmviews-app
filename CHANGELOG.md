@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/brawer/osmviews-app/compare/v0.1.5...v0.1.6) (2026-09-20)
+
+
+### 🐞 Fixes
+
+* use nearest-neighbor resampling for the raster layer ([#28](https://github.com/brawer/osmviews-app/issues/28)) ([9a4f36d](https://github.com/brawer/osmviews-app/commit/9a4f36d32f9e035820949a4e65ca41cbd6a36aa0))
+
 ## [0.1.5](https://github.com/brawer/osmviews-app/compare/v0.1.4...v0.1.5) (2026-09-18)
 
 
