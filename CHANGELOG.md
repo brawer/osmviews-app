@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.8](https://github.com/brawer/osmviews-app/compare/v0.1.7...v0.1.8) (2026-09-20)
+
+
+### 🆕 Features
+
+* add a circular tap loupe, magnified current_zoom + 4 ([#35](https://github.com/brawer/osmviews-app/issues/35)) ([cce66e8](https://github.com/brawer/osmviews-app/commit/cce66e8517f59c25c47d748f708908d6902078ad))
+
 ## [0.1.7](https://github.com/brawer/osmviews-app/compare/v0.1.6...v0.1.7) (2026-09-20)
 
 
