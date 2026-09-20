@@ -30,6 +30,7 @@ export default function App() {
           onCogMeta={onCogMeta}
           onViewportRange={onViewportRange}
           onTapValue={onTapValue}
+          tapValue={tapValue}
         />
       )}
 

@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Sascha Brawer <sascha@brawer.ch>
 // SPDX-License-Identifier: MIT
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 // MapLibre GL 6 dropped its UMD/default-export build; import as a namespace.
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -18,12 +18,11 @@ import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 import { cogProtocol, colorScale, setColorFunction, locationValues } from '@geomatico/maplibre-cog-protocol';
 import { readCogMeta } from '../lib/cogMeta.js';
 import { computeViewportRange } from '../lib/viewportRange.js';
+import { addCogRasterLayer } from '../lib/cogLayer.js';
 import { currentRamp } from '../lib/ramp.js';
 import { parseViewFromPath, makeViewStateSync } from '../lib/urlState.js';
 import { loadMinimalBasemapStyle } from '../lib/basemapStyle.js';
-
-const COG_SOURCE_ID = 'osmviews';
-const COG_LAYER_ID = 'osmviews-raster';
+import TapLoupe from './TapLoupe.jsx';
 
 let protocolRegistered = false;
 function ensureCogProtocol() {
@@ -46,9 +45,15 @@ function updateViewportRange(map, tiff, onViewportRange) {
   });
 }
 
-export default function MapView({ tiffUrl, onCogMeta, onViewportRange, onTapValue }) {
+export default function MapView({ tiffUrl, onCogMeta, onViewportRange, onTapValue, tapValue }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
+  // mapInstance/cogReady mirror mapRef/cogUrlRef/smaxRef, set once each is
+  // known, purely so TapLoupe (below) can receive them as props -- reading
+  // a ref's .current during render isn't safe, and refs don't trigger a
+  // re-render on their own when set from inside an effect anyway.
+  const [mapInstance, setMapInstance] = useState(null);
+  const [cogReady, setCogReady] = useState(null); // { cogUrl, smax }
   // Promise, resolves once mapRef.current is set (the map is constructed).
   // Needed because construction is now deferred behind the basemap-style
   // fetch below: the effect that builds the COG layer runs in the same
@@ -91,6 +96,7 @@ export default function MapView({ tiffUrl, onCogMeta, onViewportRange, onTapValu
         attributionControl: false,
       });
       mapRef.current = map;
+      setMapInstance(map);
       if (import.meta.env.DEV) window.__debugMap = map;
       // Wait for the style's `'style.load'` event, not the Map-level
       // `'load'` event and not `isStyleLoaded()` -- both of those
@@ -162,6 +168,7 @@ export default function MapView({ tiffUrl, onCogMeta, onViewportRange, onTapValu
       cogUrlRef.current = cogUrl;
       smaxRef.current = smax;
       cogTiffRef.current = tiff;
+      setCogReady({ cogUrl, smax });
       onCogMeta({ smax });
 
       const interpolate = colorScale({ customColors: currentRamp(), min: 0, max: smax, isContinuous: true });
@@ -170,41 +177,10 @@ export default function MapView({ tiffUrl, onCogMeta, onViewportRange, onTapValu
         color.set([r, g, b, 255]); // fully opaque -- 0 (ocean/desert) is a real value, not "no data"
       });
 
-      if (map.getSource(COG_SOURCE_ID)) return;
-      map.addSource(COG_SOURCE_ID, { type: 'raster', url: `cog://${cogUrl}`, tileSize: 256 });
-      // Insert above every polygon fill and line -- roads, waterways, water
-      // itself -- but below administrative boundaries and the (curated,
-      // see basemapStyle.js) text labels, so those stay legible over the
-      // color layer. loadMinimalBasemapStyle() already trimmed everything
-      // before the boundary layers out of the style entirely, so this
-      // resolves to the very first remaining layer in practice; kept as a
-      // real search (not just styleLayers[0]) so an unrelated style
-      // without boundary_*-named layers still inserts before its first
-      // symbol layer, keeping labels on top, same fallback
-      // loadMinimalBasemapStyle() itself uses.
-      const styleLayers = map.getStyle().layers ?? [];
-      const beforeId = styleLayers.find((l) => l.id.startsWith('boundary') || l.type === 'symbol')?.id;
-      map.addLayer(
-        {
-          id: COG_LAYER_ID,
-          source: COG_SOURCE_ID,
-          type: 'raster',
-          paint: {
-            // The COG's native resolution is ~z10 (Phase 0 finding in
-            // brawer/osmviews#100); past z12 it's an overzoomed flat wash
-            // with no more real detail, so fade it out and let the
-            // basemap carry street-level detail instead.
-            'raster-opacity': ['interpolate', ['linear'], ['zoom'], 10, 1, 13, 0.55],
-            // This is discrete per-pixel grid data, not a continuous field
-            // -- MapLibre's default bilinear resampling blurs adjacent
-            // cells together on overzoom, which reads as a rendering glitch
-            // rather than what it actually is (a coarser grid cell shown
-            // bigger). Nearest-neighbor keeps cell edges sharp instead.
-            'raster-resampling': 'nearest',
-          },
-        },
-        beforeId,
-      );
+      // Past z12 the COG's native ~z10 resolution is an overzoomed flat
+      // wash with no more real detail, so fade it out there and let the
+      // basemap carry street-level detail instead.
+      addCogRasterLayer(map, cogUrl, ['interpolate', ['linear'], ['zoom'], 10, 1, 13, 0.55]);
       // 'idle' fires once every source has finished loading and a frame has
       // rendered -- including near-instantly if these tiles are already
       // cached, matching the "or, if cached, immediately" case.
@@ -220,5 +196,12 @@ export default function MapView({ tiffUrl, onCogMeta, onViewportRange, onTapValu
     };
   }, [tiffUrl, onCogMeta, onViewportRange, onTapValue]);
 
-  return <div ref={containerRef} style={{ position: 'absolute', inset: 0 }} />;
+  return (
+    <div style={{ position: 'absolute', inset: 0 }}>
+      <div ref={containerRef} style={{ position: 'absolute', inset: 0 }} />
+      {mapInstance && cogReady && (
+        <TapLoupe map={mapInstance} tapValue={tapValue} cogUrl={cogReady.cogUrl} smax={cogReady.smax} />
+      )}
+    </div>
+  );
 }
