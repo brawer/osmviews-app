@@ -200,7 +200,13 @@ export default function MapView({ tiffUrl, onCogMeta, onViewportRange, onTapValu
     <div style={{ position: 'absolute', inset: 0 }}>
       <div ref={containerRef} style={{ position: 'absolute', inset: 0 }} />
       {mapInstance && cogReady && (
-        <TapLoupe map={mapInstance} tapValue={tapValue} cogUrl={cogReady.cogUrl} smax={cogReady.smax} />
+        <TapLoupe
+          map={mapInstance}
+          tapValue={tapValue}
+          cogUrl={cogReady.cogUrl}
+          smax={cogReady.smax}
+          onTapValue={onTapValue}
+        />
       )}
     </div>
   );

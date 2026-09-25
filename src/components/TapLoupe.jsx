@@ -17,10 +17,16 @@
 // tells you where it is. A small dot at that exact center, colored with
 // the actual pixel value there (not white), doubles as a quiet
 // confirmation without needing a crosshair.
+//
+// Clicking inside the loupe re-taps using the loupe's own map's click
+// event, not the main map's: at any given screen pixel inside the
+// circle, the loupe is showing a different, more zoomed-in place than
+// what's at that same pixel on the main map underneath, so the two
+// would disagree about which location was actually clicked.
 
 import { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
-import { colorScale } from '@geomatico/maplibre-cog-protocol';
+import { colorScale, locationValues } from '@geomatico/maplibre-cog-protocol';
 import { addCogRasterLayer } from '../lib/cogLayer.js';
 import { currentRamp } from '../lib/ramp.js';
 import { loadMinimalBasemapStyle } from '../lib/basemapStyle.js';
@@ -28,7 +34,7 @@ import { loadMinimalBasemapStyle } from '../lib/basemapStyle.js';
 const LOUPE_SIZE = 160; // px, keep in sync with app.css's .tap-loupe
 const ZOOM_OFFSET = 4;
 
-export default function TapLoupe({ map, tapValue, cogUrl, smax }) {
+export default function TapLoupe({ map, tapValue, cogUrl, smax, onTapValue }) {
   const containerRef = useRef(null);
   const loupeMapRef = useRef(null);
   const [loupeReady, setLoupeReady] = useState(false);
@@ -86,6 +92,30 @@ export default function TapLoupe({ map, tapValue, cogUrl, smax }) {
     map.on('move', update);
     return () => map.off('move', update);
   }, [map, tapValue]);
+
+  // Re-tap on a click inside the loupe, using its own map's click event --
+  // e.lngLat here is already unprojected through the loupe's own (more
+  // zoomed-in) view, exactly the coordinate the user is actually pointing
+  // at. Feeding it back through the same onTapValue the main map uses lets
+  // this double as a "drill in for more precision" interaction: it snaps
+  // both the ramp card and the loupe itself (still at map.getZoom() +
+  // ZOOM_OFFSET, not a further zoom) to the refined location.
+  useEffect(() => {
+    if (!loupeReady) return;
+    const loupeMap = loupeMapRef.current;
+    const onClick = (e) => {
+      locationValues(cogUrl, { latitude: e.lngLat.lat, longitude: e.lngLat.lng }, loupeMap.getZoom()).then(
+        (result) => {
+          const value = result?.[0];
+          if (!Number.isFinite(value) || smax == null) return;
+          const normalized = Math.min(1, Math.max(0, value / smax));
+          onTapValue({ value, normalized, lngLat: e.lngLat });
+        },
+      );
+    };
+    loupeMap.on('click', onClick);
+    return () => loupeMap.off('click', onClick);
+  }, [loupeReady, cogUrl, smax, onTapValue]);
 
   let dotColor = null;
   if (tapValue && smax != null) {
