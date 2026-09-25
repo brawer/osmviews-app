@@ -333,6 +333,15 @@
   inset: 0;
   border-radius: 50%;
   overflow: hidden;
+  /* .tap-loupe above is pointer-events: none (decorative, click-through
+     to the main map by default), but a click landing inside the visible
+     circle should hit the loupe's own map instead -- see TapLoupe.jsx.
+     clip-path (not just border-radius/overflow, which don't reliably
+     restrict hit-testing) keeps that click-catching limited to the
+     circle itself, not this element's full square box: a click in one of
+     the box's invisible corners still passes through to the main map. */
+  clip-path: circle(50%);
+  pointer-events: auto;
 }
 
 /* Firefox doesn't clip MapLibre's WebGL canvas with border-radius,
