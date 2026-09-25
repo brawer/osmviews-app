@@ -333,16 +333,20 @@
   inset: 0;
   border-radius: 50%;
   overflow: hidden;
-  /* Firefox doesn't reliably clip a WebGL canvas (MapLibre's own) to
-     border-radius + overflow: hidden -- the canvas gets promoted to its
-     own compositor layer, which that clipping path doesn't reach, so the
-     rim drew over a still-square map underneath it. clip-path clips at
-     the compositor level instead and fixes it there. Applied here, on the
-     canvas's own direct parent, rather than on .tap-loupe itself: that
-     outer element's box-shadow (the rim) extends past its own border box,
-     and a clip-path there would cut that shadow off at the circle's edge
-     along with the canvas. */
-  clip-path: circle(50%);
+}
+
+/* Firefox doesn't reliably clip MapLibre's WebGL canvas to an ancestor's
+   border-radius/overflow/clip-path -- confirmed: even a clip-path right on
+   .tap-loupe__map (the canvas's own parent) left the canvas unclipped
+   there, presumably because MapLibre's own stylesheet takes the canvas
+   out of flow (position: absolute) inside a further nested
+   .maplibregl-canvas-container, promoting it to a compositor layer no
+   ancestor clip reaches. border-radius applied straight to the canvas
+   element itself sidesteps that: it clips the element's own painted
+   content as part of its own box, the same way it would on an <img>, with
+   no dependency on any ancestor's clip propagating across layers. */
+.tap-loupe__map .maplibregl-canvas {
+  border-radius: 50%;
 }
 
 /* Clear over the middle so the actual pixel color stays legible; only
