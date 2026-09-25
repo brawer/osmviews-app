@@ -331,6 +331,18 @@
 .tap-loupe__map {
   position: absolute;
   inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  /* Firefox doesn't reliably clip a WebGL canvas (MapLibre's own) to
+     border-radius + overflow: hidden -- the canvas gets promoted to its
+     own compositor layer, which that clipping path doesn't reach, so the
+     rim drew over a still-square map underneath it. clip-path clips at
+     the compositor level instead and fixes it there. Applied here, on the
+     canvas's own direct parent, rather than on .tap-loupe itself: that
+     outer element's box-shadow (the rim) extends past its own border box,
+     and a clip-path there would cut that shadow off at the circle's edge
+     along with the canvas. */
+  clip-path: circle(50%);
 }
 
 /* Clear over the middle so the actual pixel color stays legible; only
