@@ -335,18 +335,22 @@
   overflow: hidden;
 }
 
-/* Firefox doesn't reliably clip MapLibre's WebGL canvas to an ancestor's
-   border-radius/overflow/clip-path -- confirmed: even a clip-path right on
-   .tap-loupe__map (the canvas's own parent) left the canvas unclipped
-   there, presumably because MapLibre's own stylesheet takes the canvas
-   out of flow (position: absolute) inside a further nested
-   .maplibregl-canvas-container, promoting it to a compositor layer no
-   ancestor clip reaches. border-radius applied straight to the canvas
-   element itself sidesteps that: it clips the element's own painted
-   content as part of its own box, the same way it would on an <img>, with
-   no dependency on any ancestor's clip propagating across layers. */
+/* Firefox doesn't clip MapLibre's WebGL canvas with border-radius,
+   overflow: hidden, or clip-path -- tried all three (on the canvas's
+   parent, then on the canvas element itself), still unclipped in
+   Firefox every time. This is a known category of Firefox bug: a WebGL
+   canvas gets promoted to its own compositor layer, and clip-path/
+   border-radius/overflow-based clipping there goes through a code path
+   that layer doesn't participate in. mask-image uses a different
+   pipeline (alpha compositing), which does reach a GPU-composited layer
+   -- the standard workaround for exactly this bug. An explicit circle
+   size (80px), not a percentage/keyword: LOUPE_SIZE (TapLoupe.jsx) is
+   160px, so this is that box's own exact radius, sidestepping the
+   separate "circle sizing keyword" pitfall the sheen gradient below
+   already ran into once (farthest-corner vs. farthest-side). */
 .tap-loupe__map .maplibregl-canvas {
-  border-radius: 50%;
+  -webkit-mask-image: radial-gradient(circle 80px at 50% 50%, #000 79px, transparent 80px);
+  mask-image: radial-gradient(circle 80px at 50% 50%, #000 79px, transparent 80px);
 }
 
 /* Clear over the middle so the actual pixel color stays legible; only
