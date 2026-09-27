@@ -65,12 +65,23 @@ export default function TapLoupe({ map, tapValue, cogUrl, smax, onTapValue }) {
     };
   }, [cogUrl]);
 
-  // Snap the loupe to the tapped location/zoom on every new tap -- a
-  // fixed snapshot from then on, not continuously re-zooming as the main
-  // map's own zoom changes afterwards.
+  // Center the loupe on the tapped location on every new tap, and keep it
+  // in step with the main map from then on: always ZOOM_OFFSET levels
+  // deeper than the main map's zoom, and rotated by the same bearing.
+  // A plain pan changes neither, only where the loupe sits on screen
+  // (see below), so skip the jumpTo then.
   useEffect(() => {
     if (!tapValue || !loupeReady) return;
-    loupeMapRef.current?.jumpTo({ center: tapValue.lngLat, zoom: map.getZoom() + ZOOM_OFFSET });
+    const loupeMap = loupeMapRef.current;
+    loupeMap.jumpTo({ center: tapValue.lngLat, zoom: map.getZoom() + ZOOM_OFFSET, bearing: map.getBearing() });
+    const sync = () => {
+      const zoom = map.getZoom() + ZOOM_OFFSET;
+      const bearing = map.getBearing();
+      if (zoom === loupeMap.getZoom() && bearing === loupeMap.getBearing()) return;
+      loupeMap.jumpTo({ zoom, bearing });
+    };
+    map.on('move', sync);
+    return () => map.off('move', sync);
   }, [tapValue, loupeReady, map]);
 
   // Track the tapped point's screen position as the main map pans, so the
