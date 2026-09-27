@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.10](https://github.com/brawer/osmviews-app/compare/v0.1.9...v0.1.10) (2026-09-27)
+
+
+### 🆕 Features
+
+* draw faint roads over the color layer at deep zoom ([#40](https://github.com/brawer/osmviews-app/issues/40)) ([28a3657](https://github.com/brawer/osmviews-app/commit/28a3657b26201ba4affed962d46d80aa600a2ea1))
+* keep the tap loupe's zoom and rotation in sync with the main map ([#42](https://github.com/brawer/osmviews-app/issues/42)) ([337f8f9](https://github.com/brawer/osmviews-app/commit/337f8f96845e2421f5827f2268974a2dead8f388))
+* show the tapped value inside the tap loupe ([#43](https://github.com/brawer/osmviews-app/issues/43)) ([375083b](https://github.com/brawer/osmviews-app/commit/375083b73d775c1f123204ad8273a9d76f81ab80))
+
+
+### 🐞 Fixes
+
+* make the tap loupe's center dot read as the tapped pixel color ([#44](https://github.com/brawer/osmviews-app/issues/44)) ([26ef4b2](https://github.com/brawer/osmviews-app/commit/26ef4b245afc7c3a8e6986dba1f8830b2b22dc38))
+
 ## [0.1.9](https://github.com/brawer/osmviews-app/compare/v0.1.8...v0.1.9) (2026-09-25)
 
 
