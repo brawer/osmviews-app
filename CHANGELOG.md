@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.9](https://github.com/brawer/osmviews-app/compare/v0.1.8...v0.1.9) (2026-09-25)
+
+
+### 🆕 Features
+
+* click inside the loupe re-taps using its own coordinates ([#39](https://github.com/brawer/osmviews-app/issues/39)) ([fe8969d](https://github.com/brawer/osmviews-app/commit/fe8969d4c1c7ecd554ac771a32a723c2a46110e8))
+
+
+### 🐞 Fixes
+
+* clip the tap loupe's map canvas correctly in Firefox ([#37](https://github.com/brawer/osmviews-app/issues/37)) ([328b828](https://github.com/brawer/osmviews-app/commit/328b8280b3136973a2d6a93d24d84559a881e424))
+
 ## [0.1.8](https://github.com/brawer/osmviews-app/compare/v0.1.7...v0.1.8) (2026-09-20)
 
 
