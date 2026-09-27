@@ -16,7 +16,10 @@
 // marks nothing either -- centering the magnifier on the point already
 // tells you where it is. A small dot at that exact center, colored with
 // the actual pixel value there (not white), doubles as a quiet
-// confirmation without needing a crosshair.
+// confirmation without needing a crosshair. A short leader line runs
+// from the dot down and to the right into a small label with the tapped
+// value -- the same number the ramp card shows -- so it can be read right
+// where the eye already is, without glancing over at the ramp.
 //
 // Clicking inside the loupe re-taps using the loupe's own map's click
 // event, not the main map's: at any given screen pixel inside the
@@ -148,7 +151,19 @@ export default function TapLoupe({ map, tapValue, cogUrl, smax, onTapValue }) {
     >
       <div ref={containerRef} className="tap-loupe__map" />
       <div className="tap-loupe__sheen" />
-      {dotColor && <div className="tap-loupe__dot" style={{ background: dotColor }} />}
+      {dotColor && (
+        <>
+          {/* Leader: from just outside the dot's ring, 45° down-right, then
+              a short horizontal run into the label. Coordinates are in the
+              loupe's own LOUPE_SIZE box, centered on (80, 80). */}
+          <svg className="tap-loupe__leader" viewBox={`0 0 ${LOUPE_SIZE} ${LOUPE_SIZE}`} aria-hidden="true">
+            <path className="tap-loupe__leader-halo" d="M86.5 86.5 L97 97 H103" />
+            <path className="tap-loupe__leader-line" d="M86.5 86.5 L97 97 H103" />
+          </svg>
+          <div className="tap-loupe__value">{tapValue.normalized.toFixed(3)}</div>
+          <div className="tap-loupe__dot" style={{ background: dotColor }} />
+        </>
+      )}
     </div>
   );
 }
