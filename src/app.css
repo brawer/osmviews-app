@@ -322,10 +322,12 @@
   overflow: hidden;
   pointer-events: none;
   z-index: 5;
+  /* One ring in the theme's paper color (light in light mode, dark in
+     dark mode, like the value label), plus a single soft drop shadow to
+     lift the loupe off the map. */
   box-shadow:
-    0 0 0 3px rgba(255, 255, 255, 0.95),
-    0 0 0 4.5px rgba(36, 32, 25, 0.15),
-    0 14px 34px rgba(36, 32, 25, 0.4);
+    0 0 0 2.5px var(--paper-raised),
+    0 10px 28px rgba(0, 0, 0, 0.35);
 }
 
 .tap-loupe__map {
@@ -355,29 +357,29 @@
    -- the standard workaround for exactly this bug. An explicit circle
    size (80px), not a percentage/keyword: LOUPE_SIZE (TapLoupe.jsx) is
    160px, so this is that box's own exact radius, sidestepping the
-   separate "circle sizing keyword" pitfall the sheen gradient below
-   already ran into once (farthest-corner vs. farthest-side). */
+   separate "circle sizing keyword" pitfall of radial gradients
+   (farthest-corner vs. farthest-side). */
 .tap-loupe__map .maplibregl-canvas {
   -webkit-mask-image: radial-gradient(circle 80px at 50% 50%, #000 79px, transparent 80px);
   mask-image: radial-gradient(circle 80px at 50% 50%, #000 79px, transparent 80px);
 }
 
-/* Clear over the middle so the actual pixel color stays legible; only
-   tints and vignettes near the rim. The "circle farthest-side" size
-   keyword matters: without it, a radial-gradient on a square box defaults
-   to "farthest-corner" (the diagonal, ~113px here) rather than the 80px
-   radius of the circle actually visible after the clip above -- stops
-   would land past the visible edge, entirely invisible. */
-.tap-loupe__sheen {
+/* A dark vignette along the rim, for a bit of lens-like depth, fully
+   clear over the inner 70% so the magnified map keeps its true ramp
+   colors where it matters. No highlight band: a white glow ring inside
+   the rim was more distracting than helpful. The "circle farthest-side"
+   size keyword matters: without it, a radial-gradient on a square box
+   defaults to "farthest-corner" (the diagonal, ~113px here) rather than
+   the 80px radius of the visible circle, and the stops would land past
+   the visible edge. */
+.tap-loupe__rim {
   position: absolute;
   inset: 0;
   border-radius: 50%;
   background: radial-gradient(
     circle farthest-side at 50% 50%,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0) 44%,
-    rgba(255, 255, 255, 0.16) 66%,
-    rgba(255, 255, 255, 0.03) 80%,
+    rgba(20, 17, 12, 0) 70%,
+    rgba(20, 17, 12, 0.08) 85%,
     rgba(20, 17, 12, 0.3) 100%
   );
 }

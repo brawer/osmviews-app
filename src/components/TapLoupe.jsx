@@ -150,7 +150,7 @@ export default function TapLoupe({ map, tapValue, cogUrl, smax, onTapValue }) {
       }}
     >
       <div ref={containerRef} className="tap-loupe__map" />
-      <div className="tap-loupe__sheen" />
+      <div className="tap-loupe__rim" />
       {dotColor && (
         <>
           {/* Leader: from just outside the dot's ring, 45° down-right, then
