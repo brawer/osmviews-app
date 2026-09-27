@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.11](https://github.com/brawer/osmviews-app/compare/v0.1.10...v0.1.11) (2026-09-27)
+
+
+### 🆕 Features
+
+* calmer tap loupe rim, without the white glow ([#45](https://github.com/brawer/osmviews-app/issues/45)) ([c7dc655](https://github.com/brawer/osmviews-app/commit/c7dc655c4c1720af719cc8dc3b34e5c30c333fb7))
+
 ## [0.1.10](https://github.com/brawer/osmviews-app/compare/v0.1.9...v0.1.10) (2026-09-27)
 
 
