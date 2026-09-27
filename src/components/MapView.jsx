@@ -177,10 +177,7 @@ export default function MapView({ tiffUrl, onCogMeta, onViewportRange, onTapValu
         color.set([r, g, b, 255]); // fully opaque -- 0 (ocean/desert) is a real value, not "no data"
       });
 
-      // Past z12 the COG's native ~z10 resolution is an overzoomed flat
-      // wash with no more real detail, so fade it out there and let the
-      // basemap carry street-level detail instead.
-      addCogRasterLayer(map, cogUrl, ['interpolate', ['linear'], ['zoom'], 10, 1, 13, 0.55]);
+      addCogRasterLayer(map, cogUrl);
       // 'idle' fires once every source has finished loading and a frame has
       // rendered -- including near-instantly if these tiles are already
       // cached, matching the "or, if cached, immediately" case.

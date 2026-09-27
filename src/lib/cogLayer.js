@@ -9,18 +9,16 @@
 export const COG_SOURCE_ID = 'osmviews';
 export const COG_LAYER_ID = 'osmviews-raster';
 
-// `opacity` is a MapLibre paint value (a literal or an expression). The
-// main map fades the raster out past z13 -- overzoomed past the COG's
-// native ~z10 resolution, it's a flat wash better left to the basemap
-// (see MapView.jsx) -- but the loupe exists specifically to show that
-// flat wash up close, so it always passes a plain `1` instead.
-export function addCogRasterLayer(map, cogUrl, opacity) {
+// The raster is drawn fully opaque at every zoom level, so its colors
+// match the ramp exactly instead of blending with the (light or dark)
+// basemap background underneath.
+export function addCogRasterLayer(map, cogUrl) {
   if (map.getSource(COG_SOURCE_ID)) return;
   map.addSource(COG_SOURCE_ID, { type: 'raster', url: `cog://${cogUrl}`, tileSize: 256 });
-  // Insert above every polygon fill and line -- roads, waterways, water
-  // itself -- but below administrative boundaries and the (curated, see
-  // basemapStyle.js) text labels, so those stay legible over the color
-  // layer. loadMinimalBasemapStyle() already trimmed everything before the
+  // Insert above every polygon fill and line -- waterways, water itself
+  // -- but below administrative boundaries, roads (from a deep zoom on)
+  // and the (curated, see basemapStyle.js) text labels, so those stay
+  // legible over the color layer. loadMinimalBasemapStyle() already trimmed everything before the
   // boundary layers out of the style entirely, so this resolves to the
   // very first remaining layer in practice; kept as a real search (not
   // just styleLayers[0]) so an unrelated style without boundary_*-named
@@ -34,7 +32,7 @@ export function addCogRasterLayer(map, cogUrl, opacity) {
       source: COG_SOURCE_ID,
       type: 'raster',
       paint: {
-        'raster-opacity': opacity,
+        'raster-opacity': 1,
         // This is discrete per-pixel grid data, not a continuous field --
         // MapLibre's default bilinear resampling blurs adjacent cells
         // together on overzoom, which reads as a rendering glitch rather

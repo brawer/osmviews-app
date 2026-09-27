@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 // A circular "loupe" over the tapped location, magnified to
-// current_zoom + 4 -- focus (the zoomed-in content) plus context (the
+// current_zoom + 2 -- focus (the zoomed-in content) plus context (the
 // full map still visible all around it), the way a real magnifying glass
 // held over a paper map works, rather than replacing the view entirely.
 // It's a second, independent maplibregl.Map, not a viewport into the main
@@ -32,7 +32,7 @@ import { currentRamp } from '../lib/ramp.js';
 import { loadMinimalBasemapStyle } from '../lib/basemapStyle.js';
 
 const LOUPE_SIZE = 160; // px, keep in sync with app.css's .tap-loupe
-const ZOOM_OFFSET = 4;
+const ZOOM_OFFSET = 2;
 
 export default function TapLoupe({ map, tapValue, cogUrl, smax, onTapValue }) {
   const containerRef = useRef(null);
@@ -54,10 +54,7 @@ export default function TapLoupe({ map, tapValue, cogUrl, smax, onTapValue }) {
       loupeMapRef.current = loupeMap;
       loupeMap.once('style.load', () => {
         if (cancelled) return;
-        // Fully opaque, always -- unlike the main map (which fades the
-        // raster out past z13, an overzoomed flat wash there), the loupe
-        // exists specifically to show that flat wash up close.
-        addCogRasterLayer(loupeMap, cogUrl, 1);
+        addCogRasterLayer(loupeMap, cogUrl);
         setLoupeReady(true);
       });
     });
