@@ -16,20 +16,20 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@geomatico/maplibre-cog-protocol": "0.9.3",
+    "@geomatico/maplibre-cog-protocol": "0.10.0",
     "geotiff": "3.0.5",
-    "maplibre-gl": "6.10.0",
+    "maplibre-gl": "6.11.2",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@vitejs/plugin-react": "6.1.1",
-    "eslint": "10.10.0",
+    "eslint": "10.11.0",
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-react-refresh": "0.5.7",
     "globals": "17.12.0",
     "sirv": "3.0.2",
-    "vite": "8.3.0"
+    "vite": "8.3.1"
   }
 }
