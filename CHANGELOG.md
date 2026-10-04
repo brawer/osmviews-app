@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.0.0](https://github.com/brawer/osmviews-app/compare/v0.1.11...v1.0.0) (2026-10-04)
+
+
+### 🆕 Features
+
+* drag inside the tap loupe to slide it across the map ([#50](https://github.com/brawer/osmviews-app/issues/50)) ([1a1696c](https://github.com/brawer/osmviews-app/commit/1a1696c0aae77ad5feb9c6ef018a232c3c7696c2))
+* pinch inside the tap loupe zooms and rotates the map ([#48](https://github.com/brawer/osmviews-app/issues/48)) ([4ca3df4](https://github.com/brawer/osmviews-app/commit/4ca3df4d703850efe84d07c4f559bd27408b8df6))
+
+
+### 🐞 Fixes
+
+* clear the tapped value when the loupe leaves the screen ([#51](https://github.com/brawer/osmviews-app/issues/51)) ([d198a4b](https://github.com/brawer/osmviews-app/commit/d198a4b5ae7397bb7dd5032ed193b202dabedfc5))
+
+
+### 🏎️ Performance
+
+* download MapLibre's shared code once, not twice ([#52](https://github.com/brawer/osmviews-app/issues/52)) ([63dd8cb](https://github.com/brawer/osmviews-app/commit/63dd8cbc072f4e68024c075c686fba51bd3fb9c9))
+
+
+### Chores
+
+* release 1.0.0 ([#53](https://github.com/brawer/osmviews-app/issues/53)) ([07cd7b1](https://github.com/brawer/osmviews-app/commit/07cd7b183d8bccfe18e26b68c1fd00be4538351c))
+
 ## [0.1.11](https://github.com/brawer/osmviews-app/compare/v0.1.10...v0.1.11) (2026-09-27)
 
 
