@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Sascha Brawer <sascha@brawer.ch>
 // SPDX-License-Identifier: MIT
 
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
@@ -12,14 +13,19 @@ import sirv from 'sirv';
 // (gitignored) data/ folder at the same path -- with real Range-request
 // support via sirv, so the COG-reading code path is exercised faithfully
 // even while the CDN itself doesn't yet support ranges (brawer/production#38).
-// This only patches the dev server; it must never affect `vite build`, so
-// it's wired via configureServer, not `publicDir` (which would copy the
-// ~580 MB data/ folder into dist/ on every build).
+// This only patches the dev and preview servers; it must never affect
+// `vite build`, so it's wired via configureServer/configurePreviewServer,
+// not `publicDir` (which would copy the ~580 MB data/ folder into dist/ on
+// every build).
 function serveLocalData() {
   const serve = sirv('data', { dev: true });
   return {
     name: 'serve-local-data',
     configureServer(server) {
+      server.middlewares.use('/data', serve);
+    },
+    // Also for `vite preview`, to try the production build locally.
+    configurePreviewServer(server) {
       server.middlewares.use('/data', serve);
     },
   };
@@ -39,37 +45,62 @@ function serveLocalData() {
 // .mjs", by a hardcoded relative path -- both need to end up served as
 // plain ".js" for Bunny to get the Content-Type right, which for the
 // worker script alone is just a rename (handled by assetFileNames below),
-// but for its dependency also means: (a) emitting a file nothing in our
-// own source imports, since only the worker script's own text references
-// it, and (b) rewriting that reference after Vite has already renamed the
-// file it points to. Confirmed by testing: this dependency doesn't itself
+// but for its dependency also means: (a) emitting it ourselves, since
+// the worker script is only copied as an asset, so Vite never follows
+// its imports, and (b) rewriting the worker's reference to it to match
+// the emitted file's hashed name. Confirmed by testing: this dependency doesn't itself
 // import anything further, so this covers the whole chain.
 function fixMaplibreWorkerMjsExtensions() {
+  let isBuild = false;
+  let base = '/';
+  let sharedFileName = null; // assets/maplibre-gl-shared-<hash>.js
   return {
     name: 'fix-maplibre-worker-mjs-extensions',
+    // Ahead of Vite's own resolver, which would otherwise resolve the
+    // shared import below before resolveId here ever sees it.
+    enforce: 'pre',
+    configResolved(config) {
+      isBuild = config.command === 'build';
+      base = config.base;
+    },
     buildStart() {
-      const sharedPath = fileURLToPath(
-        new URL('./node_modules/maplibre-gl/dist/maplibre-gl-shared.mjs', import.meta.url),
+      if (!isBuild) return;
+      const source = readFileSync(
+        fileURLToPath(new URL('./node_modules/maplibre-gl/dist/maplibre-gl-shared.mjs', import.meta.url)),
       );
-      this.emitFile({
-        type: 'asset',
-        name: 'maplibre-gl-shared.mjs',
-        source: readFileSync(sharedPath),
-      });
+      // Named here, with our own content hash, rather than by
+      // assetFileNames once the bundle is written: resolveId below needs
+      // the final name already, while the main bundle is being built.
+      const hash = createHash('sha256').update(source).digest('base64url').slice(0, 8);
+      sharedFileName = `assets/maplibre-gl-shared-${hash}.js`;
+      this.emitFile({ type: 'asset', fileName: sharedFileName, source });
+    },
+    // MapLibre's main module imports the very same shared code, by the
+    // same hardcoded relative path. Left alone, Vite inlines a second copy
+    // of it into our main bundle, and a first visit downloads those
+    // ~500 kB twice: once inlined, once as the worker's own file. Pointing
+    // that import at the worker's emitted file instead (as an external,
+    // so it stays a real import at runtime) shares one download, cached
+    // across both. The main bundle sits in the same assets/ folder, so a
+    // relative path works unchanged.
+    resolveId(source, importer) {
+      if (!isBuild || source !== './maplibre-gl-shared.mjs' || !importer?.includes('maplibre-gl')) return null;
+      return { id: `./${sharedFileName.slice('assets/'.length)}`, external: true };
+    },
+    // That import only starts once the main bundle has been downloaded and
+    // parsed; a modulepreload starts fetching it right away, in parallel.
+    transformIndexHtml() {
+      if (!isBuild) return [];
+      return [
+        {
+          tag: 'link',
+          attrs: { rel: 'modulepreload', crossorigin: true, href: `${base}${sharedFileName}` },
+          injectTo: 'head',
+        },
+      ];
     },
     generateBundle(_options, bundle) {
-      // The shared asset's own filename carries a content hash (assigned
-      // by the same assetFileNames rule that renamed it to .js), so the
-      // worker's patched reference has to look that real name up rather
-      // than assume a fixed one.
-      const sharedFileName = Object.keys(bundle).find(
-        (f) => f.startsWith('assets/maplibre-gl-shared-') && f.endsWith('.js'),
-      );
-      if (!sharedFileName) {
-        this.error('fixMaplibreWorkerMjsExtensions: emitted maplibre-gl-shared asset not found in bundle');
-      }
-      const sharedBasename = sharedFileName.slice(sharedFileName.lastIndexOf('/') + 1);
-
+      const sharedBasename = sharedFileName.slice('assets/'.length);
       for (const [fileName, asset] of Object.entries(bundle)) {
         if (asset.type === 'asset' && fileName.startsWith('assets/maplibre-gl-worker-') && fileName.endsWith('.js')) {
           const source = typeof asset.source === 'string' ? asset.source : Buffer.from(asset.source).toString('utf-8');
@@ -85,6 +116,12 @@ export default defineConfig({
   plugins: [react(), serveLocalData(), fixMaplibreWorkerMjsExtensions()],
   build: {
     outDir: 'dist',
+    // The main bundle is mostly MapLibre's main module and React, which
+    // the map needs before it can draw anything, so splitting it wouldn't
+    // get the first screen up any sooner. Set a little above its current
+    // ~1.15 MB, so the warning only fires again if something unexpectedly
+    // large gets added.
+    chunkSizeWarningLimit: 1250,
     rollupOptions: {
       output: {
         assetFileNames: (assetInfo) => {
