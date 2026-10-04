@@ -32,7 +32,7 @@
 import { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import { colorScale, locationValues } from '@geomatico/maplibre-cog-protocol';
-import { addCogRasterLayer } from '../lib/cogLayer.js';
+import { addCogRasterLayer, COG_LAYER_ID } from '../lib/cogLayer.js';
 import { isInView } from '../lib/inView.js';
 import { currentRamp } from '../lib/ramp.js';
 import { loadMinimalBasemapStyle } from '../lib/basemapStyle.js';
@@ -63,11 +63,18 @@ export default function TapLoupe({ map, tapValue, cogUrl, smax, onTapValue }) {
         style,
         interactive: false,
         attributionControl: false,
+        // No fade-in for labels (and, below, for raster tiles): measured,
+        // MapLibre's default 300 ms fades made every tap wait another
+        // 300-600 ms after the last tile had already arrived -- even with
+        // every tile cached. A magnifier should show its content
+        // right away; the main map keeps its fades.
+        fadeDuration: 0,
       });
       loupeMapRef.current = loupeMap;
       loupeMap.once('style.load', () => {
         if (cancelled) return;
         addCogRasterLayer(loupeMap, cogUrl);
+        loupeMap.setPaintProperty(COG_LAYER_ID, 'raster-fade-duration', 0);
         setLoupeReady(true);
       });
     });
