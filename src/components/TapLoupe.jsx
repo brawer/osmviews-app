@@ -128,6 +128,92 @@ export default function TapLoupe({ map, tapValue, cogUrl, smax, onTapValue }) {
     return () => loupeMap.off('click', onClick);
   }, [loupeReady, cogUrl, smax, onTapValue]);
 
+  // Pinch-zoom/rotate and wheel/trackpad zoom inside the loupe drive the
+  // main map, exactly like the same gesture on the main map would (the
+  // sync effect above then carries the loupe along). Without this, the
+  // gesture lands on the non-interactive loupe and falls through to the
+  // browser, which zooms the whole page instead. Both pivot on the tapped
+  // location rather than the fingers/pointer, so the loupe stays put over
+  // its point while the map zooms and turns underneath it.
+  useEffect(() => {
+    if (!loupeReady || !tapValue) return;
+    const el = containerRef.current;
+    let pinch = null;
+
+    const fingers = (touches) => {
+      const [a, b] = touches;
+      const dx = b.clientX - a.clientX;
+      const dy = b.clientY - a.clientY;
+      return { dist: Math.hypot(dx, dy), angle: Math.atan2(dy, dx) };
+    };
+    const onTouchStart = (e) => {
+      if (e.touches.length !== 2) return;
+      e.preventDefault();
+      pinch = { ...fingers(e.touches), zoom: map.getZoom(), bearing: map.getBearing() };
+    };
+    const onTouchMove = (e) => {
+      if (!pinch || e.touches.length !== 2) return;
+      e.preventDefault();
+      const { dist, angle } = fingers(e.touches);
+      if (!pinch.dist) return;
+      map.easeTo({
+        zoom: pinch.zoom + Math.log2(dist / pinch.dist),
+        // Fingers turning clockwise on screen turn the map clockwise too,
+        // which is a decreasing bearing.
+        bearing: pinch.bearing - ((angle - pinch.angle) * 180) / Math.PI,
+        around: tapValue.lngLat,
+        duration: 0,
+      });
+    };
+    const onTouchEnd = (e) => {
+      if (e.touches.length < 2) pinch = null;
+    };
+
+    // Wheel and trackpad pinch (which browsers report as ctrl+wheel):
+    // hand the event on to the main map's own scroll-zoom handler, so it
+    // keeps MapLibre's wheel-vs-trackpad detection and smoothing, but with
+    // the pointer moved onto the tapped point to pivot the zoom there.
+    const onWheel = (e) => {
+      e.preventDefault();
+      const p = map.project(tapValue.lngLat);
+      const rect = map.getCanvas().getBoundingClientRect();
+      map.getCanvasContainer().dispatchEvent(
+        new WheelEvent('wheel', {
+          deltaX: e.deltaX,
+          deltaY: e.deltaY,
+          deltaZ: e.deltaZ,
+          deltaMode: e.deltaMode,
+          ctrlKey: e.ctrlKey,
+          shiftKey: e.shiftKey,
+          clientX: rect.left + p.x,
+          clientY: rect.top + p.y,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    };
+
+    // Safari's own pinch events, which would otherwise zoom the page.
+    const onGesture = (e) => e.preventDefault();
+
+    el.addEventListener('touchstart', onTouchStart, { passive: false });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd);
+    el.addEventListener('touchcancel', onTouchEnd);
+    el.addEventListener('wheel', onWheel, { passive: false });
+    el.addEventListener('gesturestart', onGesture);
+    el.addEventListener('gesturechange', onGesture);
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+      el.removeEventListener('touchcancel', onTouchEnd);
+      el.removeEventListener('wheel', onWheel);
+      el.removeEventListener('gesturestart', onGesture);
+      el.removeEventListener('gesturechange', onGesture);
+    };
+  }, [loupeReady, tapValue, map]);
+
   let dotColor = null;
   if (tapValue && smax != null) {
     const interpolate = colorScale({ customColors: currentRamp(), min: 0, max: smax, isContinuous: true });
