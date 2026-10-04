@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/brawer/osmviews-app/compare/v1.0.0...v1.0.1) (2026-10-04)
+
+
+### 🏎️ Performance
+
+* show the tap loupe's content without fading it in ([#54](https://github.com/brawer/osmviews-app/issues/54)) ([61b70f0](https://github.com/brawer/osmviews-app/commit/61b70f005881bc422bab8c7cef6400a3ba584044))
+
 ## [1.0.0](https://github.com/brawer/osmviews-app/compare/v0.1.11...v1.0.0) (2026-10-04)
 
 
