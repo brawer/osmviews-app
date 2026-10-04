@@ -33,6 +33,7 @@ import { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import { colorScale, locationValues } from '@geomatico/maplibre-cog-protocol';
 import { addCogRasterLayer } from '../lib/cogLayer.js';
+import { isInView } from '../lib/inView.js';
 import { currentRamp } from '../lib/ramp.js';
 import { loadMinimalBasemapStyle } from '../lib/basemapStyle.js';
 
@@ -105,9 +106,7 @@ export default function TapLoupe({ map, tapValue, cogUrl, smax, onTapValue }) {
     if (!focus) return;
     const update = () => {
       const p = map.project(focus);
-      const el = map.getContainer();
-      const inView = p.x >= 0 && p.x <= el.clientWidth && p.y >= 0 && p.y <= el.clientHeight;
-      setScreenPos(inView ? p : null);
+      setScreenPos(isInView(map, p) ? p : null);
     };
     update();
     map.on('move', update);

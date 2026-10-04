@@ -18,6 +18,7 @@ import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 import { cogProtocol, colorScale, setColorFunction, locationValues } from '@geomatico/maplibre-cog-protocol';
 import { readCogMeta } from '../lib/cogMeta.js';
 import { computeViewportRange } from '../lib/viewportRange.js';
+import { isInView } from '../lib/inView.js';
 import { addCogRasterLayer } from '../lib/cogLayer.js';
 import { currentRamp } from '../lib/ramp.js';
 import { parseViewFromPath, makeViewStateSync } from '../lib/urlState.js';
@@ -192,6 +193,20 @@ export default function MapView({ tiffUrl, onCogMeta, onViewportRange, onTapValu
       cancelled = true;
     };
   }, [tiffUrl, onCogMeta, onViewportRange, onTapValue]);
+
+  // Clear the tapped value once a pan (or zoom or rotation) ends with its
+  // point off screen, so the ramp card's marker goes away together with
+  // the loupe rather than lingering without the place it refers to. On
+  // moveend, not as soon as the point crosses the edge: overshooting a bit
+  // and panning back within the same gesture keeps the selection.
+  useEffect(() => {
+    if (!mapInstance || !tapValue) return;
+    const onMoveEnd = () => {
+      if (!isInView(mapInstance, mapInstance.project(tapValue.lngLat))) onTapValue(null);
+    };
+    mapInstance.on('moveend', onMoveEnd);
+    return () => mapInstance.off('moveend', onMoveEnd);
+  }, [mapInstance, tapValue, onTapValue]);
 
   return (
     <div style={{ position: 'absolute', inset: 0 }}>

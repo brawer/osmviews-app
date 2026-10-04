@@ -22,6 +22,16 @@ export default function App() {
   const onViewportRange = useCallback((range) => setViewportRange(range), []);
   const onTapValue = useCallback((tap) => setTapValue(tap), []);
 
+  // Escape dismisses the tapped value (loupe and ramp marker together),
+  // back to the same state as on page load.
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') setTapValue(null);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
       {datapackage && (
