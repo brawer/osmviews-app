@@ -51,12 +51,11 @@ Bunny storage zone defined in `brawer/production`.
 ## Choosing the version number
 
 release-please picks the bump from the commit types since the last release:
-`fix:` → patch, `feat:` → minor, and a `!` after the type or a `BREAKING
-CHANGE:` footer → a breaking bump. While the app is `0.x` (pre-1.0),
-`bump-minor-pre-major` maps a breaking change to a **minor** bump and
-everything else to a **patch** bump.
+`fix:` and `perf:` → patch, `feat:` → minor, and a `!` after the type or a
+`BREAKING CHANGE:` footer → major.
 
-Only `feat:` and `fix:` commits cut a release (and appear in `CHANGELOG.md`).
+Only `feat:`, `fix:` and `perf:` commits cut a release (and appear in
+`CHANGELOG.md`).
 `docs:`, `refactor:`, `test:`, `build:`, `ci:` and `chore:` are silent — they
 ride along with the next real release. Use `Release-As:` in a commit body to
 force a specific version.
