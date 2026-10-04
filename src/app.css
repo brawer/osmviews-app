@@ -344,8 +344,14 @@
      the box's invisible corners still passes through to the main map. */
   clip-path: circle(50%);
   pointer-events: auto;
-  /* Pinches here zoom/rotate the map (see TapLoupe.jsx), not the page. */
+  /* Drags here slide the loupe and pinches zoom/rotate the map (see
+     TapLoupe.jsx), rather than panning or zooming the page. */
   touch-action: none;
+  cursor: grab;
+}
+
+.tap-loupe__map:active {
+  cursor: grabbing;
 }
 
 /* Firefox doesn't clip MapLibre's WebGL canvas with border-radius,
@@ -453,4 +459,22 @@
     0 0 0 1.5px #fff,
     0 0 0 2.5px rgba(36, 32, 25, 0.55),
     0 1px 3px 1px rgba(0, 0, 0, 0.25);
+}
+
+/* Mid-drag, while the value for the loupe's current spot is still being
+   looked up, the readout still shows the previous spot's value: fade it
+   back so it doesn't pass for the current one. The delay keeps a lookup
+   that comes back within a frame or two (the usual case, from tiles
+   already cached for drawing) from making it flicker. */
+.tap-loupe__dot,
+.tap-loupe__value,
+.tap-loupe__leader {
+  transition: opacity 0.1s;
+}
+
+.tap-loupe--stale .tap-loupe__dot,
+.tap-loupe--stale .tap-loupe__value,
+.tap-loupe--stale .tap-loupe__leader {
+  opacity: 0.3;
+  transition: opacity 0.2s 0.15s;
 }
