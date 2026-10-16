@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/brawer/osmviews-app/compare/v1.0.1...v1.1.0) (2026-10-16)
+
+
+### 🆕 Features
+
+* link the Go client library from the drawer ([#58](https://github.com/brawer/osmviews-app/issues/58)) ([872916e](https://github.com/brawer/osmviews-app/commit/872916eaec169dccdeab494cbde69cb1ed259a8f))
+
 ## [1.0.1](https://github.com/brawer/osmviews-app/compare/v1.0.0...v1.0.1) (2026-10-04)
 
 
