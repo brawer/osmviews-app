@@ -44,12 +44,15 @@ export default function Drawer({ open, onClose, buildVersion }) {
 
         <section className="drawer__section">
           <h3>Client libraries</h3>
-          <p>Query the raster directly from your own code — both return a 0.0–1.0 rank per location.</p>
+          <p>Query the raster directly from your own code — each returns a 0.0–1.0 rank per location.</p>
           <a href="https://github.com/brawer/osmviews-py" target="_blank" rel="noreferrer">
             osmviews-py (Python)
           </a>
           <a href="https://github.com/brawer/osmviews-rs" target="_blank" rel="noreferrer">
             osmviews-rs (Rust)
+          </a>
+          <a href="https://github.com/brawer/osmviews-go" target="_blank" rel="noreferrer">
+            osmviews-go (Go)
           </a>
         </section>
 
